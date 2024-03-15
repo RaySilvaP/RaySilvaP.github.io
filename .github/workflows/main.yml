@@ -6,7 +6,7 @@ on:
 
 jobs:
   deploy-to-github-pages:
-    runs-on: ubuntu-lastest
+    runs-on: self-hosted
     steps:
       - uses: actions/checkout@v4.1.2
       
