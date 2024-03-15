@@ -5,20 +5,22 @@ on:
     branches: [main]
 permissions:
   contents: write
-  
+
 jobs:
   deploy-to-github-pages:
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@v4.1.2
-          
+
       - name: Publish Project
         run: dotnet publish RaySilvaP.github.io.csproj -c Release -o release --nologo
-       
+
+      - name: Create .nojekyll file
+        run: touch release/wwwroot/ .nojekyll
+
       - name: Commit wwwroot to GitHub Pages
         uses: JamesIves/github-pages-deploy-action@v4.5.0
         with:
           token: ${{ secrets.GITHUB_TOKEN }}
           branch: gh-pages
           folder: release/wwwroot
-     
