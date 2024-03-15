@@ -9,11 +9,6 @@ jobs:
     runs-on: self-hosted
     steps:
       - uses: actions/checkout@v4.1.2
-      
-      - name: Setup .NET
-        uses: actions/setup-dotnet@v4.0.0
-        with:
-          dotnet-version: 8.0
           
       - name: Publish Project
         run: dotnet publish RaySilvaP.github.io.csproj -c Release -o release --nologo
