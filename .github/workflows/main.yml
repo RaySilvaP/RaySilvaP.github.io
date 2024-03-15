@@ -3,7 +3,9 @@ name: Deploy to GitHub Pages
 on:
   push:
     branches: [main]
-
+permissions:
+  contents: write
+  
 jobs:
   deploy-to-github-pages:
     runs-on: self-hosted
