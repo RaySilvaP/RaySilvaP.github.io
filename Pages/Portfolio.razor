@@ -1,0 +1,13 @@
+@page "/portfolio"
+@using RaySilvaP.github.io.Components
+
+<PageTitle>Portfolio</PageTitle>
+
+<ol id="projects">
+    @for (int i = 0; i < 9; i++)
+    {
+        <li>
+            <ProjectItem />
+        </li>
+    }
+</ol>

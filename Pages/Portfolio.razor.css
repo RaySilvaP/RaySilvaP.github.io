@@ -1,0 +1,10 @@
+#projects {
+  display: flex;
+  flex-wrap: wrap;
+  justify-content: space-evenly;
+  list-style: none;
+  padding-left: 0px;
+  li {
+    margin-bottom: 10px;
+  }
+}
