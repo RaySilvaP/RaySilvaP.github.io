@@ -1,4 +1,6 @@
-<Card>
+@inject NavigationManager Navigator
+
+<Card @onclick="GoToDetails">
     <img class="thumbnail"
         src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse1.mm.bing.net%2Fth%3Fid%3DOIP.VrBU4IZiLVYKaw6FCZs8IwHaHa%26pid%3DApi&f=1&ipt=b3cd8e724dd85e67ea0b1cbd8e50e546383c99f349dd2295c608c67f4a3a6084&ipo=images" />
     <CardBody>
@@ -6,3 +8,10 @@
         <p>Ednaldo Pereira e nada mais...</p>
     </CardBody>
 </Card>
+
+@code {
+    private void GoToDetails()
+    {
+        Navigator.NavigateTo("/project");
+    }
+}
