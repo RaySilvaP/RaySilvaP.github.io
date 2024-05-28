@@ -30,19 +30,27 @@ public sealed class MongoDBRepository(IMongoClient client) : IRepository
 
     public async Task<Project?> GetProjectAsync(string id)
     {
-        var filter = Builders<MongoProjectDto>.Filter.Eq(p => p.Id, new ObjectId(id));
-        var project = await Projects.Find(filter).FirstOrDefaultAsync();
-
-        if (project == null)
-            return null;
-        else
-            return new Project
+        try
+        {
+            var filter = Builders<MongoProjectDto>.Filter.Eq(p => p.Id, new ObjectId(id));
+            var project = await Projects.Find(filter).FirstOrDefaultAsync();
+            if (project == null)
+                return null;
+            else
             {
-                Id = project.Id.ToString(),
-                Name = project.Name,
-                Description = project.Description,
-                Base64Image = project.Base64Image
-            };
+                return new Project
+                {
+                    Id = project.Id.ToString(),
+                    Name = project.Name,
+                    Description = project.Description,
+                    Base64Image = project.Base64Image
+                };
+            }
+        }
+        catch
+        {
+            return null;
+        }
     }
 
     public async Task InsertProjectAsync(Project project)
