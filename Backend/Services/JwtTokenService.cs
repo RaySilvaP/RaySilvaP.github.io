@@ -21,6 +21,6 @@ public class JwtTokenService(IConfigurationRoot root) : ITokenService
                 SecurityAlgorithms.HmacSha256Signature),
         };
         var token = tokenHandler.CreateToken(tokenDescriptor);
-        return "Bearer " + tokenHandler.WriteToken(token);
+        return tokenHandler.WriteToken(token);
     }
 }

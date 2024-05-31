@@ -3,6 +3,8 @@ using Backend.Data;
 using Backend.Installers;
 using Backend.Models;
 using Backend.Services;
+using Microsoft.AspNetCore.Antiforgery;
+using Microsoft.AspNetCore.Mvc;
 using Shared.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -15,6 +17,8 @@ builder.Services.AddScoped<IRepository, MongoDBRepository>();
 builder.Services.AddTransient<IImageService, ImageSharpService>();
 builder.Services.AddTransient<CredentialsService>();
 builder.Services.AddJwtAuthorization();
+builder.Services.AddAntiforgery();
+// builder.Services.AddTransient<HtmlService>();
 
 var app = builder.Build();
 
@@ -28,6 +32,7 @@ if (app.Environment.IsDevelopment())
 app.UseHttpsRedirection();
 app.UseAuthentication();
 app.UseAuthorization();
+app.UseAntiforgery();
 
 app.MapGet("/projects", async (IRepository repository, int page = 1, int pageSize = 10) =>
 {
@@ -109,13 +114,16 @@ ITokenService tokenService,
 HttpContext context,
 Login login) =>
 {
-    var wasSucceeded = await credentialsService.VerifyCredentialsAsync(login);
+    bool wasSucceeded = await credentialsService.VerifyCredentialsAsync(login);
     if (wasSucceeded)
     {
         var token = tokenService.GenerateToken();
         return Results.Ok(token);
     }
-    return Results.NotFound();
+    return Results.Unauthorized();
 });
+
+app.MapGet("/auth", () => Results.Ok())
+.RequireAuthorization();
 
 app.Run();
