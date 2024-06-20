@@ -1,0 +1,16 @@
+.page{
+    flex-direction: row;
+    display: flex;
+}
+
+#sidebar{
+    display: flex;
+    flex-direction: column;
+    background-color: lightgray;
+    padding: 10px;
+}
+
+#logo {
+    font-size: calc(1.2rem + 0.5vw);
+    margin-bottom: 30px;
+}

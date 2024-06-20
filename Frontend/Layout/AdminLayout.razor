@@ -1,11 +1,14 @@
-﻿@inherits LayoutComponentBase
+@using Frontend.Services
+@inherits LayoutComponentBase
+@inject HttpService _httpService
+@inject NavigationManager _navigator
 
 <div class="page">
-    <div id="header">
+    <div id="sidebar">
         <div id="logo">
             <span>Ray Silva</span>
         </div>
-        <NavBar />
+        <AdminNavBar />
     </div>
     <main>
         <article class="content px-4">

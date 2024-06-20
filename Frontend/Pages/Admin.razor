@@ -1,10 +1,8 @@
+@using Frontend.Services
 @page "/admin"
-@using System.Text.Json
-@using System.Text
-@using System.Net.Http.Headers
-@inject HttpClient HttpClient
-@inject IJSRuntime JS
-@inject NavigationManager Navigator
+@inject NavigationManager _navigator
+@inject TokenService _tokenService
+@inject HttpService _httpService
 
 <div id="login-form">
     @if (_wrongCredentials)
@@ -27,11 +25,9 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var token = await JS.InvokeAsync<string?>("getToken");
-        if (token != string.Empty && token != null)
-        {
-            Navigator.NavigateTo("/");
-        }
+        var isSuccess = await _httpService.CheckAuthorizationAsync();
+        if (isSuccess)
+            _navigator.NavigateTo("/admin/dashboard");
     }
 
     private async Task Login()
@@ -39,30 +35,11 @@
         if (_username == string.Empty || _password == string.Empty)
             return;
 
-        string json = JsonSerializer.Serialize(new
-        {
-            username = _username,
-            password = _password
-        });
+        var isSuccess = await _httpService.LoginAsync(_username, _password);
 
-        using StringContent jsonContent = new(json, Encoding.UTF8, "application/json");
-
-        var request = new HttpRequestMessage(HttpMethod.Post, "/login");
-        request.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
-        request.Content = jsonContent;
-
-        var response = await HttpClient.SendAsync(request);
-        if (response.IsSuccessStatusCode)
-        {
-            var token = await response.Content.ReadAsStringAsync();
-            token = token.Replace(@"""", "");
-            await JS.InvokeVoidAsync("storeToken", token);
-            Navigator.NavigateTo("/dashboard");
-        }
+        if (isSuccess)
+            _navigator.NavigateTo("/admin/dashboard");
         else
-        {
             _wrongCredentials = true;
-            _password = string.Empty;
-        }
     }
 }

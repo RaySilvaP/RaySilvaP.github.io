@@ -1,29 +1,7 @@
-@page "/dashboard"
-@inject IJSRuntime JS
-@inject NavigationManager Navigator
-@inject HttpClient HttpClient
-@using System.Net.Http.Headers
+@using Frontend.Services
+@page "/admin/dashboard"
+@layout AdminLayout
+@inject NavigationManager _navigator
+@inject HttpService _httpService
 
 <h1>Dashboard</h1>
-
-@code
-{
-    protected override async Task OnInitializedAsync()
-    {
-        await CheckAuthorizationAsync();
-    }
-
-    private async Task CheckAuthorizationAsync()
-    {
-        var token = await JS.InvokeAsync<string?>("getToken");
-        if (token == string.Empty || token == null)
-        {
-            Navigator.NavigateTo("/admin");
-            return;
-        }
-        var request = new HttpRequestMessage(HttpMethod.Get, "/auth");
-        request.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        await HttpClient.SendAsync(request);
-    }
-}
