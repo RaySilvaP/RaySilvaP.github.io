@@ -1,0 +1,15 @@
+#container{
+    display: flex;
+    flex: 1;
+    justify-content: center;
+}
+
+.project{
+    display: flex;
+    flex-direction: column;
+}
+
+img{
+    height: 50vh;
+    object-fit: conver;
+}

@@ -14,6 +14,6 @@
 
     protected override async Task OnInitializedAsync()
     {
-        _items = await _httpService.GetProjectsAsync();
+        _items = await _httpService.GetProjectsAsync(1, 50);
     }
 }

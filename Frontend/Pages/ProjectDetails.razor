@@ -1,9 +1,34 @@
-@page "/project"
+@using Frontend.Services
+@using Shared.Models
+@page "/projects/{id}"
+@inject HttpService _httpService
+@inject NavigationManager _navigator
 
-<div>
-    <img
-        src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse1.mm.bing.net%2Fth%3Fid%3DOIP.VrBU4IZiLVYKaw6FCZs8IwHaHa%26pid%3DApi&f=1&ipt=b3cd8e724dd85e67ea0b1cbd8e50e546383c99f349dd2295c608c67f4a3a6084&ipo=images" />
-    <h1>Title</h1>
-    <p>Description</p>
-    <p>Technologies</p>
+<div id="container">
+    <div class="project">
+        @if (_project != null)
+        {
+            @if (_project.Image != null)
+            {
+                <img src="data:@_project.Image.Type;base64,@_project.Image.Base64String" />
+            }
+            <h1>@_project.Name</h1>
+            <p>@_project.Description</p>
+        }
+    </div>
 </div>
+
+@code {
+    [Parameter]
+    public string Id { get; set; } = null!;
+    private Project? _project;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        var project = await _httpService.GetProjectAsync(Id);
+        if (project == null)
+            _navigator.NavigateTo("/");
+        else
+            _project = project;
+    }
+}

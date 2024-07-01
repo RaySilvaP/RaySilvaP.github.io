@@ -63,13 +63,22 @@ public class HttpService(HttpClient client, TokenService tokenService)
 
     public async Task<List<Project>?> GetProjectsAsync(int page = 1, int pageSize = 10)
     {
-        var token = await _tokenService.GetTokenAsync();
-        var request = new HttpRequestMessage(HttpMethod.Get, $"/projects?page={page}&pageSize={pageSize}");
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         try
         {
-            var response = await _client.SendAsync(request);
-            return await response.Content.ReadFromJsonAsync<List<Project>>();
+            return await _client.GetFromJsonAsync<List<Project>>($"/projects?page={page}&pageSize={pageSize}");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+            return null;
+        }
+    }
+
+    public async Task<Project?> GetProjectAsync(string id)
+    {
+        try
+        {
+            return await _client.GetFromJsonAsync<Project>($"/projects/{id}");
         }
         catch (Exception e)
         {
