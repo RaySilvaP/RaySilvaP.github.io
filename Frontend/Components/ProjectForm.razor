@@ -1,0 +1,62 @@
+@using Shared.Models
+@using Frontend.Services
+@inherits ComponentBase
+@inject HttpService _httpService
+
+<div>
+    <h3>New Project</h3>
+    <div class="project-form">
+        <section class="project-form-1">
+            <label for="name">Name:</label>
+            <input type="text" name="name" id="name" @bind-value="_name">
+            <label for="description">Description:</label>
+            <input type="text" name="description" id="description" @bind-value="_description">
+            <label for="image">Image:</label>
+            <InputFile OnChange="LoadFileAsync" />
+        </section>
+        <section class="project-form-2">
+            <button @onclick="PostProjectAsync">Post</button>
+            <button @onclick="Clear">Clear</button>
+        </section>
+    </div>
+</div>
+
+@code
+{
+    private string _name = string.Empty, _description = string.Empty;
+    private Image _image = new();
+
+    private async Task PostProjectAsync()
+    {
+        if (_name == string.Empty || _description == string.Empty)
+            return;
+
+        var project = new Project
+            {
+                Name = _name,
+                Description = _description,
+                Image = _image
+            };
+        var isSuccess = await _httpService.PostProjectAsync(project);
+        if (!isSuccess)
+            Console.WriteLine("Error");
+    }
+
+    private async Task LoadFileAsync(InputFileChangeEventArgs e)
+    {
+        using MemoryStream memoryStream = new();
+        Console.WriteLine(e.File.Size);
+        byte[] bytes = new byte[e.File.Size];
+        await e.File.OpenReadStream(e.File.Size).ReadAsync(bytes);
+        _image.Base64String = Convert.ToBase64String(bytes);
+        _image.Name = e.File.Name;
+        _image.Type = e.File.ContentType;
+        _image.Size = e.File.Size;
+    }
+
+    private void Clear()
+    {
+        _name = string.Empty;
+        _description = string.Empty;
+    }
+}

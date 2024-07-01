@@ -1,0 +1,33 @@
+.project-display{
+    display: flex;
+    flex-wrap: wrap;
+    flex: 1;
+    justify-content: space-evenly;
+}
+
+.project-display-item{
+    display: flex;
+    flex-direction: column;
+    width: 24%;
+    height: 200px;
+    margin-bottom: 10px;
+    border: 1px solid gray;
+    justify-content: space-between; 
+    align-items: center;
+}
+
+img{
+    float: left;
+    width: 100%;
+    height: 90%;
+    object-fit: cover;
+    background-color: gray;
+}
+
+span{
+    width: 100%;
+    background-color: white;
+    text-align: center;
+    text-overflow: clip;
+    overflow: hidden;
+}

@@ -19,13 +19,7 @@ public sealed class MongoDBRepository(IMongoClient client) : IRepository
         .Take(take)
         .ToListAsync();
 
-        return projects.Select(p => new Project
-        {
-            Id = p.Id.ToString()!,
-            Name = p.Name,
-            Description = p.Description,
-            Base64Image = p.Base64Image
-        });
+        return projects.Select(p => (Project)p);
     }
 
     public async Task<Project?> GetProjectAsync(string id)
@@ -38,13 +32,7 @@ public sealed class MongoDBRepository(IMongoClient client) : IRepository
                 return null;
             else
             {
-                return new Project
-                {
-                    Id = project.Id.ToString(),
-                    Name = project.Name,
-                    Description = project.Description,
-                    Base64Image = project.Base64Image
-                };
+                return (Project)project;
             }
         }
         catch
@@ -55,13 +43,7 @@ public sealed class MongoDBRepository(IMongoClient client) : IRepository
 
     public async Task InsertProjectAsync(Project project)
     {
-        var projectDto = new MongoProjectDto
-        {
-            Id = ObjectId.GenerateNewId(),
-            Name = project.Name,
-            Description = project.Description,
-            Base64Image = project.Base64Image
-        };
+        var projectDto = (MongoProjectDto)project;
         await Projects.InsertOneAsync(projectDto);
     }
 
@@ -79,7 +61,7 @@ public sealed class MongoDBRepository(IMongoClient client) : IRepository
         }
     }
 
-    public async Task<bool> UpdateProjectAsync(Project project)
+    public async Task<bool> UpdateProjectAsync(PutProjectDto project)
     {
         try
         {
@@ -88,8 +70,26 @@ public sealed class MongoDBRepository(IMongoClient client) : IRepository
 
             var update = Builders<MongoProjectDto>.Update
             .Set(p => p.Name, project.Name)
-            .Set(p => p.Description, project.Description)
-            .Set(p => p.Base64Image, project.Base64Image);
+            .Set(p => p.Description, project.Description);
+
+            var result = await Projects.UpdateOneAsync(filter, update);
+            return result.ModifiedCount > 0;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public async Task<bool> UpdateProjectImageAsync(PutProjectImageDto project)
+    {
+        try
+        {
+            var filter = Builders<MongoProjectDto>.Filter
+            .Eq(p => p.Id, new ObjectId(project.Id));
+
+            var update = Builders<MongoProjectDto>.Update
+            .Set(p => p.Image, project.Image);
 
             var result = await Projects.UpdateOneAsync(filter, update);
             return result.ModifiedCount > 0;

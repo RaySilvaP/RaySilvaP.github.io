@@ -6,7 +6,7 @@
 <div class="page">
     <div id="sidebar">
         <div id="logo">
-            <span>Ray Silva</span>
+            <span>Admin</span>
         </div>
         <AdminNavBar />
     </div>
@@ -16,3 +16,12 @@
         </article>
     </main>
 </div>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        var isAuthorized = await _httpService.CheckAuthorizationAsync();
+        if (!isAuthorized)
+            _navigator.NavigateTo("/admin");
+    }
+}

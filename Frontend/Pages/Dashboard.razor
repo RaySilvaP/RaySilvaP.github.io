@@ -1,7 +1,19 @@
 @using Frontend.Services
+@using Shared.Models
 @page "/admin/dashboard"
 @layout AdminLayout
-@inject NavigationManager _navigator
 @inject HttpService _httpService
 
-<h1>Dashboard</h1>
+<div class="container">
+    <ProjectForm />
+    <ProjectsDisplay Items="_items" />
+</div>
+
+@code {
+    private List<Project>? _items;
+
+    protected override async Task OnInitializedAsync()
+    {
+        _items = await _httpService.GetProjectsAsync();
+    }
+}

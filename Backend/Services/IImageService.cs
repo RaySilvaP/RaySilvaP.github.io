@@ -1,8 +1,10 @@
+using Shared.Models;
+
 namespace Backend.Services;
 
 public interface IImageService
 {
-    Task<byte[]> CompressAsync(string base64String);
+    Task CompressAsync(Image image);
 
-    Task<bool> IsBase64Valid(string base64String);
+    Task<bool> IsImageValidAsync(Image image);
 }

@@ -13,4 +13,5 @@
 #logo {
     font-size: calc(1.2rem + 0.5vw);
     margin-bottom: 30px;
+    text-align: center;
 }

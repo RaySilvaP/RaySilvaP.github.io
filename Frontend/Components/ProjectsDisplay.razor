@@ -1,0 +1,21 @@
+@using Shared.Models
+@inherits ComponentBase
+
+<h3>Projects</h3>
+<div class="project-display">
+    @if (Items != null && Items.Count != 0)
+    {
+        foreach (var item in Items)
+        {
+            <div class="project-display-item">
+                <img src="data:@item.Image.Type;base64,@item.Image.Base64String" />
+                <span>@item.Name</span>
+            </div>
+        }
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public List<Project>? Items { get; set; }
+}

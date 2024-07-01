@@ -13,7 +13,9 @@ public interface IRepository
 
     Task<bool> DeleteProjectAsync(string id);
 
-    Task<bool> UpdateProjectAsync(Project project);
+    Task<bool> UpdateProjectAsync(PutProjectDto project);
+
+    Task<bool> UpdateProjectImageAsync(PutProjectImageDto project);
 
     Task<Admin?> GetAdminAsync(string username);
 }

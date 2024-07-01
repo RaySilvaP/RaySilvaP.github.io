@@ -1,10 +1,7 @@
-using System.Buffers.Text;
 using Backend.Data;
 using Backend.Installers;
 using Backend.Models;
 using Backend.Services;
-using Microsoft.AspNetCore.Antiforgery;
-using Microsoft.AspNetCore.Mvc;
 using Shared.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -54,28 +51,20 @@ app.MapGet("/projects/{id}", async (string id, IRepository repository) =>
 app.MapPost("/projects", async (IRepository repository, IImageService service, ProjectRequestDto body) =>
 {
     Project project;
-    if (body.Base64Image == null)
-    {
-        project = new Project
-        {
-            Name = body.Name,
-            Description = body.Description
-        };
-    }
-    else
-    {
-        var isValid = await service.IsBase64Valid(body.Base64Image);
-        if (!isValid)
-            return Results.BadRequest("Invalid image.");
 
-        var bytes = await service.CompressAsync(body.Base64Image);
-        project = new Project
-        {
-            Name = body.Name,
-            Description = body.Description,
-            Base64Image = Convert.ToBase64String(bytes)
-        };
-    }
+    var isValid = await service.IsImageValidAsync(body.Image);
+    if (!isValid)
+        return Results.BadRequest("Invalid image.");
+
+    if (body.Image.Type != "image/gif")
+        await service.CompressAsync(body.Image);
+
+    project = new Project
+    {
+        Name = body.Name,
+        Description = body.Description,
+        Image = body.Image
+    };
     await repository.InsertProjectAsync(project);
     return Results.Created();
 })
@@ -91,16 +80,23 @@ app.MapDelete("/projects/{id}", async (IRepository repository, string id) =>
 })
 .RequireAuthorization();
 
-app.MapPut("/projects", async (IRepository repository, IImageService service, Project project) =>
+app.MapPut("/projects", async (IRepository repository, PutProjectDto body) =>
 {
-    if (project.Base64Image != null)
-    {
-        var isValid = await service.IsBase64Valid(project.Base64Image);
-        if (!isValid)
-            return Results.BadRequest("Invalid image.");
-    }
+    var wasModified = await repository.UpdateProjectAsync(body);
+    if (wasModified)
+        return Results.Ok();
+    else
+        return Results.NotFound();
+})
+.RequireAuthorization();
 
-    var wasModified = await repository.UpdateProjectAsync(project);
+app.MapPut("/images", async (IRepository repository, IImageService service, PutProjectImageDto body) =>
+{
+    var isValid = await service.IsImageValidAsync(body.Image);
+    if (!isValid)
+        return Results.BadRequest("Image invalid.");
+
+    var wasModified = await repository.UpdateProjectImageAsync(body);
     if (wasModified)
         return Results.Ok();
     else
