@@ -101,13 +101,73 @@ public class HttpService(HttpClient client, TokenService tokenService)
         try
         {
             var response = await _client.SendAsync(request);
-            if (response.IsSuccessStatusCode)
-                return true;
-            else
-                return false;
+            return response.IsSuccessStatusCode;
         }
-        catch
+        catch (Exception e)
         {
+            Console.WriteLine(e.Message);
+            return false;
+        }
+    }
+
+    public async Task<bool> PutProjectAsync(Project project)
+    {
+        var token = await _tokenService.GetTokenAsync();
+        string json = JsonSerializer.Serialize(project);
+        using StringContent jsonContent = new(json, Encoding.UTF8, "application/json");
+
+        var request = new HttpRequestMessage(HttpMethod.Put, "/projects");
+        request.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        request.Content = jsonContent;
+        try
+        {
+            var response = await _client.SendAsync(request);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+            return false;
+        }
+    }
+
+    public async Task<bool> PutProjectImageAsync(string id, Image image)
+    {
+        var token = await _tokenService.GetTokenAsync();
+        string json = JsonSerializer.Serialize(new { id, image });
+        using StringContent jsonContent = new(json, Encoding.UTF8, "application/json");
+
+        var request = new HttpRequestMessage(HttpMethod.Put, "/images");
+        request.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        request.Content = jsonContent;
+        try
+        {
+            var response = await _client.SendAsync(request);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+            return false;
+        }
+    }
+
+    public async Task<bool> DeleteProjectAsync(string id)
+    {
+        var token = await _tokenService.GetTokenAsync();
+        var request = new HttpRequestMessage(HttpMethod.Delete, $"/projects/{id}");
+        request.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        try
+        {
+            var response = await _client.SendAsync(request);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
             return false;
         }
     }

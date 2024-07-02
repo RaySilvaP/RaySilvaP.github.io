@@ -1,0 +1,92 @@
+@using Shared.Models
+@using Frontend.Services
+@page "/admin/editor"
+@layout AdminLayout
+@inject HttpService _httpService
+@inject NavigationManager _navigator
+
+<div id="container">
+    <div id="top-row">
+        <label for="project-id">Project ID:</label>
+        <input type="text" name="id" id="id" @bind-value="_id">
+        <button @onclick="GetProject">Edit</button>
+    </div>
+    @if (_project != null)
+    {
+        <div id="project">
+            <label for="name">Name:</label>
+            <input type="text" name="name" id="name" @bind-value="_project.Name">
+            <label for="description">Description:</label>
+            <input type="text" name="description" id="description" @bind-value="_project.Description">
+            @if (_project.Image != null)
+            {
+                <div id="images">
+                    <img src="data:@_project.Image.Type;base64,@_project.Image.Base64String">
+                    <InputFile OnChange="LoadFile" />
+                </div>
+            }
+        </div>
+        <div id="footer">
+            <button @onclick="DeleteProject">Excluir</button>
+            <button @onclick="SaveProject">Salvar</button>
+        </div>
+    }
+    else
+    {
+        <span>@_spanMessage</span>
+    }
+</div>
+
+@code {
+    private string _id = string.Empty;
+    private Project? _project;
+    private string _spanMessage = "No Project...";
+
+    private async Task LoadFile(InputFileChangeEventArgs e)
+    {
+        using MemoryStream memoryStream = new();
+        Console.WriteLine(e.File.Size);
+        byte[] bytes = new byte[e.File.Size];
+        await e.File.OpenReadStream(e.File.Size).ReadAsync(bytes);
+        _project!.Image = new Image
+            {
+                Base64String = Convert.ToBase64String(bytes),
+                Name = e.File.Name,
+                Type = e.File.ContentType,
+                Size = e.File.Size
+            };
+    }
+
+    private async Task GetProject()
+    {
+        _project = await _httpService.GetProjectAsync(_id);
+        if (_project == null)
+            _spanMessage = "Project not found.";
+    }
+
+    private async Task SaveProject()
+    {
+        var isSuccess = await _httpService.PutProjectAsync(_project!);
+        if (isSuccess)
+            Console.WriteLine("Project saved.");
+
+        if (_project!.Image != null)
+        {
+            var isImageSaved = await _httpService.PutProjectImageAsync(_project!.Id, _project!.Image);
+            if (isImageSaved)
+                Console.WriteLine("Image saved.");
+            else
+                Console.WriteLine("Image not saved.");
+        }
+    }
+
+    private async Task DeleteProject()
+    {
+        var isSuccess = await _httpService.DeleteProjectAsync(_project!.Id);
+        if (isSuccess)
+        {
+            Console.WriteLine("Project deleted.");
+            _navigator.Refresh(true);
+        }
+    }
+}
