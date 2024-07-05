@@ -9,31 +9,35 @@ public class MongoProjectDto
 {
     public ObjectId Id { get; set; }
     [BsonElement("name")]
-    public string Name { get; set; } = "";
+    public string Name { get; set; } = string.Empty;
     [BsonElement("description")]
-    public string Description { get; set; } = "";
-    [BsonElement("image")]
-    public Image Image { get; set; } = new();
+    public string Description { get; set; } = string.Empty;
+    [BsonElement("thumbnailId")]
+    public string ThumbnailId { get; set; } = string.Empty;
+    [BsonElement("imagesIds")]
+    public List<string>? ImageIds { get; set; }
 
-    public static explicit operator Project(MongoProjectDto v)
+    public static explicit operator ProjectDto(MongoProjectDto v)
     {
-        return new Project
+        return new ProjectDto
         {
             Id = v.Id.ToString(),
             Name = v.Name,
             Description = v.Description,
-            Image = v.Image
+            ThumbnailId = v.ThumbnailId,
+            ImageIds = v.ImageIds
         };
     }
 
-    public static explicit operator MongoProjectDto(Project v)
+    public static explicit operator MongoProjectDto(ProjectDto v)
     {
         return new MongoProjectDto
         {
             Id = v.Id == string.Empty ? ObjectId.GenerateNewId() : new ObjectId(v.Id),
             Name = v.Name,
             Description = v.Description,
-            Image = v.Image
+            ThumbnailId = v.ThumbnailId,
+            ImageIds = v.ImageIds
         };
     }
 }

@@ -1,10 +1,10 @@
 namespace Shared.Models;
 
-public class Project
+public class ProjectDto
 {
     public string Id { get; set; } = string.Empty;
     public string Name { get; set; } = string.Empty;
     public string Description { get; set; } = string.Empty;
-    public Image? Thumbnail { get; set; }
-    public List<Image>? Images { get; set; }
+    public string ThumbnailId { get; set; } = string.Empty;
+    public List<string>? ImageIds { get; set; }
 }

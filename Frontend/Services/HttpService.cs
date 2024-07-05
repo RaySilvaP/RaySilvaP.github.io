@@ -138,7 +138,7 @@ public class HttpService(HttpClient client, TokenService tokenService)
         string json = JsonSerializer.Serialize(new { id, image });
         using StringContent jsonContent = new(json, Encoding.UTF8, "application/json");
 
-        var request = new HttpRequestMessage(HttpMethod.Put, "/images");
+        var request = new HttpRequestMessage(HttpMethod.Put, "/projects/images");
         request.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         request.Content = jsonContent;

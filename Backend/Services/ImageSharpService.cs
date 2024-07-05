@@ -1,7 +1,7 @@
 using System.Buffers.Text;
-using SixLabors.ImageSharp;
 using SixLabors.ImageSharp.Formats.Jpeg;
-using Shared.Models;
+using SixLabors.ImageSharp.Processing;
+using SixLabors.ImageSharp;
 
 namespace Backend.Services;
 
@@ -11,17 +11,21 @@ public class ImageSharpService : IImageService
     {
         var bytes = Convert.FromBase64String(image.Base64String);
         using var stream = new MemoryStream(bytes);
-        using var imageStream = await SixLabors.ImageSharp.Image.LoadAsync(stream);
+        using var imageStream = await Image.LoadAsync(stream);
         using var tempStream = new MemoryStream();
-        var encoder = new JpegEncoder
-        {
-            Quality = 90
-        };
+
+        var encoder = new JpegEncoder { Quality = 95 };
         await imageStream.SaveAsync(tempStream, encoder);
+
         bytes = tempStream.ToArray();
         image.Base64String = Convert.ToBase64String(bytes);
-        image.Type = "image/jpeg";
+        image.Format = "image/jpeg";
         image.Size = bytes.LongLength;
+    }
+
+    public async Task<Shared.Models.Image> CreateThumbnailAsync(Shared.Models.Image image)
+    {
+        throw new NotImplementedException();
     }
 
     public async Task<bool> IsImageValidAsync(Shared.Models.Image image)
@@ -33,7 +37,7 @@ public class ImageSharpService : IImageService
         {
             var bytes = Convert.FromBase64String(image.Base64String);
             using var stream = new MemoryStream(bytes);
-            using var imageStream = await SixLabors.ImageSharp.Image.LoadAsync(stream);
+            using var imageStream = await Image.LoadAsync(stream);
             return true;
         }
         catch

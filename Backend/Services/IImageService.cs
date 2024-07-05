@@ -7,4 +7,6 @@ public interface IImageService
     Task CompressAsync(Image image);
 
     Task<bool> IsImageValidAsync(Image image);
+
+    Task<Image> CreateThumbnailAsync(Image image);
 }

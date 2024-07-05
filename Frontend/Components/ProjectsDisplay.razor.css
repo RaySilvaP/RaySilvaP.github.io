@@ -14,7 +14,7 @@
     height: 200px;
     margin-bottom: 10px;
     border: 1px solid gray;
-    justify-content: space-between; 
+    justify-content: end;
     align-items: center;
 }
 

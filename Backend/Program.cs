@@ -2,6 +2,7 @@ using Backend.Data;
 using Backend.Installers;
 using Backend.Models;
 using Backend.Services;
+using Microsoft.AspNetCore.Mvc;
 using Shared.Models;
 
 var builder = WebApplication.CreateBuilder(args);
@@ -48,25 +49,20 @@ app.MapGet("/projects/{id}", async (string id, IRepository repository) =>
         return Results.Ok(project);
 });
 
-app.MapPost("/projects", async (IRepository repository, IImageService service, ProjectRequestDto body) =>
+app.MapPost("/projects", async (IRepository repository, IImageService service, PostProjectDto body) =>
 {
-    Project project;
+    ProjectDto project;
 
-    var isValid = await service.IsImageValidAsync(body.Image);
-    if (!isValid)
-        return Results.BadRequest("Invalid image.");
-
-    if (body.Image.Type != "image/gif")
-        await service.CompressAsync(body.Image);
-
-    project = new Project
+    project = new ProjectDto
     {
         Name = body.Name,
         Description = body.Description,
-        Image = body.Image
     };
-    await repository.InsertProjectAsync(project);
-    return Results.Created();
+    var isSuccess = await repository.InsertProjectAsync(project);
+    if (isSuccess)
+        return Results.Created();
+    else
+        return Results.StatusCode(500);
 })
 .RequireAuthorization();
 
@@ -90,14 +86,53 @@ app.MapPut("/projects", async (IRepository repository, PutProjectDto body) =>
 })
 .RequireAuthorization();
 
-app.MapPut("/images", async (IRepository repository, IImageService service, PutProjectImageDto body) =>
+app.MapGet("/images/{id}", async (IRepository repository, string id) =>
+{
+    var image = await repository.GetImageAsync(id);
+    if (image == null)
+        return Results.NotFound();
+    else
+        return Results.Ok(image);
+});
+
+app.MapPost("/images", async (IRepository repository, IImageService service, PostImageDto body) =>
 {
     var isValid = await service.IsImageValidAsync(body.Image);
     if (!isValid)
         return Results.BadRequest("Image invalid.");
 
-    var wasModified = await repository.UpdateProjectImageAsync(body);
+    if (body.Image.Format != "image/gif")
+        await service.CompressAsync(body.Image);
+
+    var isSuccess = await repository.InsertImageAsync(body.ProjectId, body.Image);
+    if (isSuccess)
+        return Results.Ok();
+    else
+        return Results.NotFound();
+})
+.RequireAuthorization();
+
+app.MapPut("/images", async (IRepository repository, IImageService service, Image image) =>
+{
+    var isValid = await service.IsImageValidAsync(image);
+    if (!isValid)
+        return Results.BadRequest("Image invalid.");
+
+    if (image.Format != "image/gif")
+        await service.CompressAsync(image);
+
+    var wasModified = await repository.UpdateImageAsync(image);
     if (wasModified)
+        return Results.Ok();
+    else
+        return Results.NotFound();
+})
+.RequireAuthorization();
+
+app.MapDelete("/images/{id}", async (IRepository repository, string id) =>
+{
+    var wasDeleted = await repository.DeleteImageAsync(id);
+    if (wasDeleted)
         return Results.Ok();
     else
         return Results.NotFound();

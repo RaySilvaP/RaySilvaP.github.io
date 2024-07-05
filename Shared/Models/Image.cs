@@ -2,15 +2,9 @@ namespace Shared.Models;
 
 public class Image
 {
-    public string Base64String { get; set; }
-    public string Name { get; set; }
-    public string Type { get; set; }
+    public string Id { get; set; } = string.Empty;
+    public string Base64String { get; set; } = string.Empty;
+    public string Name { get; set; } = string.Empty;
+    public string Format { get; set; } = string.Empty;
     public long Size { get; set; }
-
-    public Image()
-    {
-        Base64String = string.Empty;
-        Name = string.Empty;
-        Type = string.Empty;
-    }
 }
