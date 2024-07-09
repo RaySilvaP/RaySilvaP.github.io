@@ -1,0 +1,9 @@
+.project-form-properties{
+    display: flex;
+    flex-direction: column;
+}
+
+.project-form-images{
+    display: flex;
+    flex-wrap: wrap;
+}

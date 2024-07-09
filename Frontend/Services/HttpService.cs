@@ -61,11 +61,11 @@ public class HttpService(HttpClient client, TokenService tokenService)
         }
     }
 
-    public async Task<List<Project>?> GetProjectsAsync(int page = 1, int pageSize = 10)
+    public async Task<List<ProjectDto>?> GetProjectsAsync(int page = 1, int pageSize = 10)
     {
         try
         {
-            return await _client.GetFromJsonAsync<List<Project>>($"/projects?page={page}&pageSize={pageSize}");
+            return await _client.GetFromJsonAsync<List<ProjectDto>>($"/projects?page={page}&pageSize={pageSize}");
         }
         catch (Exception e)
         {
@@ -74,11 +74,11 @@ public class HttpService(HttpClient client, TokenService tokenService)
         }
     }
 
-    public async Task<Project?> GetProjectAsync(string id)
+    public async Task<ProjectDto?> GetProjectAsync(string id)
     {
         try
         {
-            return await _client.GetFromJsonAsync<Project>($"/projects/{id}");
+            return await _client.GetFromJsonAsync<ProjectDto>($"/projects/{id}");
         }
         catch (Exception e)
         {
@@ -169,6 +169,19 @@ public class HttpService(HttpClient client, TokenService tokenService)
         {
             Console.WriteLine(e.Message);
             return false;
+        }
+    }
+
+    public async Task<Image?> GetImageAsync(string id)
+    {
+        try
+        {
+            var image = await _client.GetFromJsonAsync<Image>($"/images/{id}");
+            return image;
+        }
+        catch
+        {
+            return null;
         }
     }
 }

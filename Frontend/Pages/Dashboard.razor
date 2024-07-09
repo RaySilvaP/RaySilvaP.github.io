@@ -1,15 +1,15 @@
 @using Frontend.Services
 @using Shared.Models
 @page "/admin/dashboard"
+@layout AdminLayout
 @inject HttpService _httpService
 
 <div class="container">
-    <ProjectForm />
     <ProjectsDisplay Items="_items" />
 </div>
 
 @code {
-    private List<Project>? _items;
+    private List<ProjectDto>? _items;
 
     protected override async Task OnInitializedAsync()
     {

@@ -2,6 +2,7 @@ using System.Buffers.Text;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp;
+using MongoDB.Driver;
 
 namespace Backend.Services;
 
@@ -13,10 +14,9 @@ public class ImageSharpService : IImageService
         using var stream = new MemoryStream(bytes);
         using var imageStream = await Image.LoadAsync(stream);
         using var tempStream = new MemoryStream();
-
         var encoder = new JpegEncoder { Quality = 95 };
-        await imageStream.SaveAsync(tempStream, encoder);
 
+        await imageStream.SaveAsync(tempStream, encoder);
         bytes = tempStream.ToArray();
         image.Base64String = Convert.ToBase64String(bytes);
         image.Format = "image/jpeg";
@@ -25,7 +25,25 @@ public class ImageSharpService : IImageService
 
     public async Task<Shared.Models.Image> CreateThumbnailAsync(Shared.Models.Image image)
     {
-        throw new NotImplementedException();
+        var bytes = Convert.FromBase64String(image.Base64String);
+        using var stream = new MemoryStream(bytes);
+        using var tempStream = new MemoryStream();
+        using var imageStream = await Image.LoadAsync(stream);
+        var width = imageStream.Width / 3;
+        var height = imageStream.Height / 3;
+
+        imageStream.Mutate(x => x.Resize(width, height));
+        await imageStream.SaveAsJpegAsync(tempStream);
+        bytes = tempStream.ToArray();
+
+        return new Shared.Models.Image
+        {
+            Id = image.Id,
+            Base64String = Convert.ToBase64String(bytes),
+            Name = image.Name,
+            Format = "image/jpeg",
+            Size = bytes.LongLength
+        };
     }
 
     public async Task<bool> IsImageValidAsync(Shared.Models.Image image)

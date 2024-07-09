@@ -112,17 +112,16 @@ app.MapPost("/images", async (IRepository repository, IImageService service, Pos
 })
 .RequireAuthorization();
 
-app.MapPut("/images", async (IRepository repository, IImageService service, Image image) =>
+app.MapPost("/images/thumbnails", async (IRepository repository, IImageService service, PostImageDto body) =>
 {
-    var isValid = await service.IsImageValidAsync(image);
+    var isValid = await service.IsImageValidAsync(body.Image);
     if (!isValid)
         return Results.BadRequest("Image invalid.");
 
-    if (image.Format != "image/gif")
-        await service.CompressAsync(image);
+    var thumbnail = await service.CreateThumbnailAsync(body.Image);
 
-    var wasModified = await repository.UpdateImageAsync(image);
-    if (wasModified)
+    var isSuccess = await repository.InsertThumbnailAsync(body.ProjectId, thumbnail);
+    if (isSuccess)
         return Results.Ok();
     else
         return Results.NotFound();

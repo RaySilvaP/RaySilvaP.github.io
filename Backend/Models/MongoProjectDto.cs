@@ -14,7 +14,7 @@ public class MongoProjectDto
     public string Description { get; set; } = string.Empty;
     [BsonElement("thumbnailId")]
     public string ThumbnailId { get; set; } = string.Empty;
-    [BsonElement("imagesIds")]
+    [BsonElement("imageIds")]
     public List<string>? ImageIds { get; set; }
 
     public static explicit operator ProjectDto(MongoProjectDto v)

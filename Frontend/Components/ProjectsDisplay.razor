@@ -3,22 +3,25 @@
 @inject NavigationManager _navigator
 
 <h3>Projects</h3>
-<ol class="project-display">
-    @if (Items != null && Items.Count != 0)
-    {
-        foreach (var item in Items)
+@if (Items != null)
+{
+    <ol class="project-display">
+        @foreach (var item in Items)
         {
             <li class="project-display-item" @onclick="() => NavigateToDetails(item.Id)">
-                <img src="data:@item.Image.Type;base64,@item.Image.Base64String" />
-                <span>@item.Name</span>
+                <ProjectDisplayItem Project="item" />
             </li>
         }
-    }
-</ol>
+    </ol>
+}
+else
+{
+    <span>No projects... :(</span>
+}
 
 @code {
     [Parameter, EditorRequired]
-    public List<Project>? Items { get; set; }
+    public List<ProjectDto>? Items { get; set; }
 
     private void NavigateToDetails(string id)
     => _navigator.NavigateTo($"/projects/{id}");

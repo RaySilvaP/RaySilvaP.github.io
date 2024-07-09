@@ -1,39 +1,8 @@
 .project-display{
     display: flex;
-    flex-wrap: wrap;
+    flex-direction: column;
     flex: 1;
     justify-content: space-evenly;
     list-style: none;
     padding-left: 0px;
-}
-
-.project-display-item{
-    display: flex;
-    flex-direction: column;
-    width: 250px;
-    height: 200px;
-    margin-bottom: 10px;
-    border: 1px solid gray;
-    justify-content: end;
-    align-items: center;
-}
-
-.project-display-item:hover{
-    cursor: pointer;
-}
-
-img{
-    float: left;
-    width: 100%;
-    height: 90%;
-    object-fit: cover;
-    background-color: gray;
-}
-
-span{
-    width: 100%;
-    background-color: white;
-    text-align: center;
-    text-overflow: clip;
-    overflow: hidden;
 }

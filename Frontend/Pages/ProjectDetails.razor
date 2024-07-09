@@ -8,9 +8,9 @@
     <div class="project">
         @if (_project != null)
         {
-            @if (_project.Image != null)
+            @if (_project.Thumbnail != null)
             {
-                <img src="data:@_project.Image.Type;base64,@_project.Image.Base64String" />
+                <img src="data:@_project.Thumbnail.Format;base64,@_project.Thumbnail.Base64String" />
             }
             <h1>@_project.Name</h1>
             <p>@_project.Description</p>
@@ -39,6 +39,14 @@
         if (project == null)
             _navigator.NavigateTo("/");
         else
-            _project = project;
+        {
+            var thumbnail = await _httpService.GetImageAsync(project.ThumbnailId);
+            _project = new Project
+                {
+                    Name = project.Name,
+                    Description = project.Description,
+                    Thumbnail = thumbnail
+                };
+        }
     }
 }

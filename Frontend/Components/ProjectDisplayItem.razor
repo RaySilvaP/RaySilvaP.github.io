@@ -1,0 +1,39 @@
+@using Shared.Models
+@using Frontend.Services
+@inherits ComponentBase
+@inject HttpService _httpService
+
+<div class="project-display-item">
+    @if (_thumbnail != null)
+    {
+        <img src="data:@_thumbnail.Format;base64,@_thumbnail.Base64String" />
+    }
+    else
+    {
+        <i class="bi bi-image"></i>
+    }
+    <div class="project-display-item-body">
+        <span class="project-display-item-title">@Project.Name</span>
+        <span>@Project.Description</span>
+    </div>
+</div>
+
+@code
+{
+    [Parameter, EditorRequired]
+    public ProjectDto Project { get; set; } = null!;
+    private Image? _thumbnail;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        await GetThumbnailAsync();
+    }
+
+    private async Task GetThumbnailAsync()
+    {
+        if (Project.ThumbnailId != string.Empty)
+        {
+            _thumbnail = await _httpService.GetImageAsync(Project.ThumbnailId);
+        }
+    }
+}

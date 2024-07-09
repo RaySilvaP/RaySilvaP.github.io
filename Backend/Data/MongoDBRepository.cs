@@ -1,14 +1,17 @@
 using Backend.Models;
+using Backend.Services;
 using MongoDB.Bson;
 using MongoDB.Driver;
+using MongoDB.Driver.Core.Authentication;
 using MongoDB.Driver.Linq;
 using Shared.Models;
 
 namespace Backend.Data;
 
-public sealed class MongoDBRepository(IMongoClient client) : IRepository
+public sealed class MongoDBRepository(IMongoClient client, IImageService imageService) : IRepository
 {
     private readonly IMongoDatabase _database = client.GetDatabase("db");
+    private readonly IImageService _imageService = imageService;
     private IMongoCollection<MongoProjectDto> Projects => _database.GetCollection<MongoProjectDto>("projects");
     private IMongoCollection<MongoImageDto> Images => _database.GetCollection<MongoImageDto>("images");
 
@@ -120,7 +123,22 @@ public sealed class MongoDBRepository(IMongoClient client) : IRepository
         {
             var imageDto = (MongoImageDto)image;
             await Images.InsertOneAsync(imageDto);
-            var isSuccess = await AddProjectImageAsync(projectId, imageDto.Id.ToString());
+            var isSuccess = await AddProjectImageAsync(projectId, imageDto);
+            return isSuccess;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    public async Task<bool> InsertThumbnailAsync(string projectId, Image thumbnail)
+    {
+        try
+        {
+            var imageDto = (MongoImageDto)thumbnail;
+            await Images.InsertOneAsync(imageDto);
+            var isSuccess = await SetProjectThumbnailAsync(projectId, imageDto.Id.ToString());
             return isSuccess;
         }
         catch
@@ -136,28 +154,6 @@ public sealed class MongoDBRepository(IMongoClient client) : IRepository
             var filter = Builders<MongoImageDto>.Filter.Eq(i => i.Id, new ObjectId(id));
             var result = await Images.DeleteOneAsync(filter);
             return result.DeletedCount > 0;
-        }
-        catch
-        {
-            return false;
-        }
-    }
-
-    public async Task<bool> UpdateImageAsync(Image image)
-    {
-        try
-        {
-            var filter = Builders<MongoImageDto>.Filter
-            .Eq(i => i.Id, new ObjectId(image.Id));
-
-            var update = Builders<MongoImageDto>.Update
-            .Set(i => i.Base64String, image.Base64String)
-            .Set(i => i.Name, image.Name)
-            .Set(i => i.Format, image.Format)
-            .Set(i => i.Size, image.Size);
-
-            var result = await Images.UpdateOneAsync(filter, update);
-            return result.ModifiedCount > 0;
         }
         catch
         {
@@ -183,7 +179,7 @@ public sealed class MongoDBRepository(IMongoClient client) : IRepository
             };
     }
 
-    private async Task<bool> AddProjectImageAsync(string projectId, string imageId)
+    private async Task<bool> AddProjectImageAsync(string projectId, MongoImageDto imageDto)
     {
         try
         {
@@ -191,9 +187,9 @@ public sealed class MongoDBRepository(IMongoClient client) : IRepository
             if (project != null)
             {
                 if (project.ImageIds == null)
-                    project.ImageIds = [imageId.ToString()];
+                    project.ImageIds = [imageDto.Id.ToString()];
                 else
-                    project.ImageIds.Add(imageId.ToString());
+                    project.ImageIds.Add(imageDto.Id.ToString());
 
                 var filter = Builders<MongoProjectDto>.Filter
                 .Eq(p => p.Id, new ObjectId(project.Id));
@@ -211,5 +207,31 @@ public sealed class MongoDBRepository(IMongoClient client) : IRepository
         {
             return false;
         }
+    }
+
+    private async Task<bool> SetProjectThumbnailAsync(string projectId, string thumbnailId)
+    {
+        try
+        {
+            await DeleteThumbnailAsync(projectId);
+
+            var filter = Builders<MongoProjectDto>.Filter
+            .Eq(p => p.Id, new ObjectId(projectId));
+            var update = Builders<MongoProjectDto>.Update
+            .Set(p => p.ThumbnailId, thumbnailId);
+
+            var result = await Projects.UpdateOneAsync(filter, update);
+            return result.ModifiedCount > 0;
+        }
+        catch
+        {
+            return false;
+        }
+    }
+
+    private async Task DeleteThumbnailAsync(string projectId)
+    {
+        var project = await GetProjectAsync(projectId);
+        await DeleteImageAsync(project!.ThumbnailId);
     }
 }

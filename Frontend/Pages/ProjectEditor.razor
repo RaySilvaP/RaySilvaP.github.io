@@ -18,10 +18,10 @@
             <input type="text" name="name" id="name" @bind-value="_project.Name">
             <label for="description">Description:</label>
             <input type="text" name="description" id="description" @bind-value="_project.Description">
-            @if (_project.Image != null)
+            @if (_project.Images[0] != null)
             {
                 <div id="images">
-                    <img src="data:@_project.Image.Type;base64,@_project.Image.Base64String">
+                    <img src="data:@_project.Images[0].Format;base64,@_project.Images[0].Base64String">
                     <InputFile OnChange="LoadFile" />
                 </div>
             }
@@ -48,18 +48,18 @@
         Console.WriteLine(e.File.Size);
         byte[] bytes = new byte[e.File.Size];
         await e.File.OpenReadStream(e.File.Size).ReadAsync(bytes);
-        _project!.Image = new Image
+        _project!.Images[0] = new Image
             {
                 Base64String = Convert.ToBase64String(bytes),
                 Name = e.File.Name,
-                Type = e.File.ContentType,
+                Format = e.File.ContentType,
                 Size = e.File.Size
             };
     }
 
     private async Task GetProject()
     {
-        _project = await _httpService.GetProjectAsync(_id);
+        //_project = await _httpService.GetProjectAsync(_id);
         if (_project == null)
             _spanMessage = "Project not found.";
     }
@@ -70,9 +70,9 @@
         if (isSuccess)
             Console.WriteLine("Project saved.");
 
-        if (_project!.Image != null)
+        if (_project!.Images[0] != null)
         {
-            var isImageSaved = await _httpService.PutProjectImageAsync(_project!.Id, _project!.Image);
+            var isImageSaved = await _httpService.PutProjectImageAsync(_project!.Id, _project!.Images[0]);
             if (isImageSaved)
                 Console.WriteLine("Image saved.");
             else

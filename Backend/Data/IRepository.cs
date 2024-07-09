@@ -19,9 +19,9 @@ public interface IRepository
 
     Task<bool> InsertImageAsync(string projectId, Image image);
 
-    Task<bool> DeleteImageAsync(string id);
+    Task<bool> InsertThumbnailAsync(string projectId, Image thumbnail);
 
-    Task<bool> UpdateImageAsync(Image image);
+    Task<bool> DeleteImageAsync(string id);
 
     Task<Admin?> GetAdminAsync(string username);
 }

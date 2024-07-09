@@ -7,4 +7,9 @@ public class Image
     public string Name { get; set; } = string.Empty;
     public string Format { get; set; } = string.Empty;
     public long Size { get; set; }
+
+    public override int GetHashCode()
+    {
+        return Id.GetHashCode();
+    }
 }
