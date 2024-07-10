@@ -1,8 +1,10 @@
 @using Shared.Models
+@using Shared.Extensions
 @using Frontend.Services
 @page "/admin/poster"
 @layout AdminLayout
 @inject HttpService _httpService
+@inject IJSRuntime _jSRuntime
 
 <div>
     <h3>New Project</h3>
@@ -14,7 +16,10 @@
             <input type="text" name="description" id="description" @bind-value="_description">
         </div>
         <div class="project-form-images">
+            <InputFile multiple OnChange="LoadFilesAsync" @ref="_inputFile" />
+            <div class="images-preview" @ref="_imgsPreview">
 
+            </div>
         </div>
         <div class="project-form-buttons">
             <button @onclick="PostProjectAsync">Post</button>
@@ -25,8 +30,13 @@
 
 @code
 {
+    private const string PATH = "uploads/";
     private string _name = string.Empty, _description = string.Empty;
     private Image _image = new();
+    private List<string> _filesPath = [];
+    private ElementReference _imgsPreview;
+    private InputFile? _inputFile;
+    private IReadOnlyList<IBrowserFile>? _files;
 
     private async Task PostProjectAsync()
     {
@@ -39,20 +49,12 @@
                 Description = _description,
             };
         var isSuccess = await _httpService.PostProjectAsync(project);
-        if (!isSuccess)
-            Console.WriteLine("Error");
     }
 
-    private async Task LoadFileAsync(InputFileChangeEventArgs e)
+    private async Task LoadFilesAsync(InputFileChangeEventArgs e)
     {
-        using MemoryStream memoryStream = new();
-        Console.WriteLine(e.File.Size);
-        byte[] bytes = new byte[e.File.Size];
-        await e.File.OpenReadStream(e.File.Size).ReadAsync(bytes);
-        _image.Base64String = Convert.ToBase64String(bytes);
-        _image.Name = e.File.Name;
-        _image.Format = e.File.ContentType;
-        _image.Size = e.File.Size;
+        _files = e.GetMultipleFiles();
+        await _jSRuntime.InvokeVoidAsync("previewImages", _inputFile!.Element, _imgsPreview);
     }
 
     private void Clear()
