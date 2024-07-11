@@ -8,10 +8,9 @@ using Shared.Models;
 
 namespace Backend.Data;
 
-public sealed class MongoDBRepository(IMongoClient client, IImageService imageService) : IRepository
+public sealed class MongoDBRepository(IMongoClient client) : IRepository
 {
     private readonly IMongoDatabase _database = client.GetDatabase("db");
-    private readonly IImageService _imageService = imageService;
     private IMongoCollection<MongoProjectDto> Projects => _database.GetCollection<MongoProjectDto>("projects");
     private IMongoCollection<MongoImageDto> Images => _database.GetCollection<MongoImageDto>("images");
 
@@ -51,6 +50,7 @@ public sealed class MongoDBRepository(IMongoClient client, IImageService imageSe
         {
             var projectDto = (MongoProjectDto)project;
             await Projects.InsertOneAsync(projectDto);
+            project.Id = projectDto.Id.ToString();
             return true;
         }
         catch

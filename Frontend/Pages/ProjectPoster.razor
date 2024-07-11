@@ -43,12 +43,29 @@
         if (_name == string.Empty || _description == string.Empty)
             return;
 
-        var project = new Project
+        var project = new ProjectDto
             {
                 Name = _name,
                 Description = _description,
             };
         var isSuccess = await _httpService.PostProjectAsync(project);
+        if (isSuccess && _files != null)
+        {
+            for (int i = 0; i < _files.Count; i++)
+            {
+                var image = new Image
+                    {
+                        Name = _files[i].Name,
+                        Format = _files[i].ContentType,
+                        Size = _files[i].Size,
+                        Base64String = await _files[i].OpenReadStream(long.MaxValue).ConvertToBase64Async(),
+                    };
+                if (i == 0)
+                    await _httpService.PostThumbnailAsync(image, project.Id);
+
+                await _httpService.PostImageAsync(image, project.Id);
+            }
+        }
     }
 
     private async Task LoadFilesAsync(InputFileChangeEventArgs e)

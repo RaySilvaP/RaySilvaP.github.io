@@ -2,6 +2,7 @@ using Backend.Data;
 using Backend.Installers;
 using Backend.Models;
 using Backend.Services;
+using Microsoft.AspNetCore.Http.Extensions;
 using Microsoft.AspNetCore.Mvc;
 using Shared.Models;
 
@@ -49,18 +50,19 @@ app.MapGet("/projects/{id}", async (string id, IRepository repository) =>
         return Results.Ok(project);
 });
 
-app.MapPost("/projects", async (IRepository repository, IImageService service, PostProjectDto body) =>
+app.MapPost("/projects", async (IRepository repository, IImageService service, HttpRequest request, PostProjectDto body) =>
 {
-    ProjectDto project;
-
-    project = new ProjectDto
+    var project = new ProjectDto
     {
         Name = body.Name,
         Description = body.Description,
     };
+
+    var url = $"{request.Scheme}://{request.Host.Value}/";
+
     var isSuccess = await repository.InsertProjectAsync(project);
     if (isSuccess)
-        return Results.Created();
+        return Results.Created(url + $"projects/{project.Id}", project);
     else
         return Results.StatusCode(500);
 })

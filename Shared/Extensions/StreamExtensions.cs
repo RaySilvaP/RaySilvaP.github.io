@@ -8,7 +8,6 @@ public static class StreamExtension
             return Convert.ToBase64String(memoryStream.ToArray());
 
         var bytes = new byte[stream.Length];
-        stream.Seek(0, SeekOrigin.Begin);
         await stream.ReadAsync(bytes);
 
         return Convert.ToBase64String(bytes);

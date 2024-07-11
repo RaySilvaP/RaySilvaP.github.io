@@ -88,7 +88,7 @@ public class HttpService(HttpClient client, TokenService tokenService)
         }
     }
 
-    public async Task<bool> PostProjectAsync(Project project)
+    public async Task<bool> PostProjectAsync(ProjectDto project)
     {
         string json = JsonSerializer.Serialize(project);
         var token = await _tokenService.GetTokenAsync();
@@ -102,7 +102,9 @@ public class HttpService(HttpClient client, TokenService tokenService)
         try
         {
             var response = await _client.SendAsync(request);
-            return response.IsSuccessStatusCode;
+            var content = await response.Content.ReadFromJsonAsync<ProjectDto>();
+            project.Id = content.Id;
+            return true;
         }
         catch (Exception e)
         {
@@ -111,7 +113,7 @@ public class HttpService(HttpClient client, TokenService tokenService)
         }
     }
 
-    public async Task<bool> PutProjectAsync(Project project)
+    public async Task<bool> PutProjectAsync(ProjectDto project)
     {
         var token = await _tokenService.GetTokenAsync();
         string json = JsonSerializer.Serialize(project);
@@ -183,6 +185,52 @@ public class HttpService(HttpClient client, TokenService tokenService)
         catch
         {
             return null;
+        }
+    }
+
+    public async Task<bool> PostImageAsync(Image image, string projectId)
+    {
+        string json = JsonSerializer.Serialize(new { projectId, image });
+        var token = await _tokenService.GetTokenAsync();
+
+        using StringContent jsonContent = new(json, Encoding.UTF8, "application/json");
+
+        var request = new HttpRequestMessage(HttpMethod.Post, "/images");
+        request.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        request.Content = jsonContent;
+        try
+        {
+            var response = await _client.SendAsync(request);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+            return false;
+        }
+    }
+
+    public async Task<bool> PostThumbnailAsync(Image image, string projectId)
+    {
+        string json = JsonSerializer.Serialize(new { projectId, image });
+        var token = await _tokenService.GetTokenAsync();
+
+        using StringContent jsonContent = new(json, Encoding.UTF8, "application/json");
+
+        var request = new HttpRequestMessage(HttpMethod.Post, "/images/thumbnails");
+        request.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
+        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
+        request.Content = jsonContent;
+        try
+        {
+            var response = await _client.SendAsync(request);
+            return response.IsSuccessStatusCode;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e.Message);
+            return false;
         }
     }
 }
