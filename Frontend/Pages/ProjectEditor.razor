@@ -5,21 +5,22 @@
 @inject HttpService _httpService
 @inject NavigationManager _navigator
 
+<h3>Edit Project</h3>
 <div id="container">
-    <div id="top-row">
+    <div id="searchbar">
         <label for="project-id">Project ID:</label>
         <input type="text" name="id" id="id" @bind-value="_id">
         <button @onclick="GetProject">Edit</button>
     </div>
     @if (_project != null)
     {
-        <div id="project">
+        <div id="project-form-properties">
             <label for="name">Name:</label>
             <input type="text" name="name" id="name" @bind-value="_project.Name">
             <label for="description">Description:</label>
-            <input type="text" name="description" id="description" @bind-value="_project.Description">
+            <textarea rows="5" name="description" id="description" @bind="_project.Description"></textarea>
         </div>
-        <div id="footer">
+        <div id="project-form-buttons">
             <button @onclick="DeleteProject">Excluir</button>
             <button @onclick="SaveProject">Salvar</button>
         </div>

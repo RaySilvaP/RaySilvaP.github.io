@@ -13,6 +13,7 @@ public class HttpService(HttpClient client, TokenService tokenService)
 {
     private readonly HttpClient _client = client;
     private readonly TokenService _tokenService = tokenService;
+    private readonly JsonSerializerOptions _serializerOptions = new() { PropertyNameCaseInsensitive = true };
 
     public async Task<bool> LoginAsync(string username, string password)
     {
@@ -62,16 +63,22 @@ public class HttpService(HttpClient client, TokenService tokenService)
         }
     }
 
-    public async Task<List<ProjectDto>?> GetProjectsAsync(int page = 1, int pageSize = 10)
+    public async Task<(int, List<ProjectDto>?)> GetProjectsAsync(int page = 1, int pageSize = 10)
     {
         try
         {
-            return await _client.GetFromJsonAsync<List<ProjectDto>>($"/projects?page={page}&pageSize={pageSize}");
+            var json = await _client.GetFromJsonAsync<JsonDocument>($"/projects?page={page}&pageSize={pageSize}");
+            if (json == null)
+                return (0, null);
+
+            var projects = json.RootElement.GetProperty("projects").Deserialize<List<ProjectDto>>(_serializerOptions);
+            var totalPages = json.RootElement.GetProperty("totalPages").GetInt32();
+            return (totalPages, projects);
         }
         catch (Exception e)
         {
             Console.WriteLine(e.Message);
-            return null;
+            return (0, null);
         }
     }
 

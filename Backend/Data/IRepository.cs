@@ -9,6 +9,8 @@ public interface IRepository
 
     Task<ProjectDto?> GetProjectAsync(string id);
 
+    Task<int> GetProjectsCountAsync();
+
     Task<bool> InsertProjectAsync(ProjectDto project);
 
     Task<bool> DeleteProjectAsync(string id);

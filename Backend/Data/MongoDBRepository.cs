@@ -44,6 +44,13 @@ public sealed class MongoDBRepository(IMongoClient client) : IRepository
         }
     }
 
+    public async Task<int> GetProjectsCountAsync()
+    {
+        var filter = Builders<MongoProjectDto>.Filter.Empty;
+        var count = await Projects.CountDocumentsAsync(filter);
+        return (int)count;
+    }
+
     public async Task<bool> InsertProjectAsync(ProjectDto project)
     {
         try

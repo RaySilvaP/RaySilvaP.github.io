@@ -38,7 +38,9 @@ app.MapGet("/projects", async (IRepository repository, int page = 1, int pageSiz
     page = page < 1 ? 1 : page;
     pageSize = pageSize < 1 ? 1 : pageSize;
     var projects = await repository.GetProjectsAsync((page - 1) * pageSize, pageSize);
-    return Results.Ok(projects);
+    var count = await repository.GetProjectsCountAsync();
+    var totalPages = (int)MathF.Ceiling(count / pageSize);
+    return Results.Ok(new { totalPages, projects });
 });
 
 app.MapGet("/projects/{id}", async (string id, IRepository repository) =>

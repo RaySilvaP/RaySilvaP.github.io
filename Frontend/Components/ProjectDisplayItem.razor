@@ -22,6 +22,7 @@
 {
     [Parameter, EditorRequired]
     public ProjectDto Project { get; set; } = null!;
+    private ProjectDto _project = null!;
     private Image? _thumbnail;
 
     protected override async Task OnParametersSetAsync()
@@ -35,5 +36,7 @@
         {
             _thumbnail = await _httpService.GetImageAsync(Project.ThumbnailId);
         }
+        else
+            _thumbnail = null;
     }
 }

@@ -14,10 +14,6 @@
             }
             <h1>@_project.Name</h1>
             <p>@_project.Description</p>
-            if (_isAuthorized)
-            {
-                <span>@_project.Id</span>
-            }
         }
     </div>
 </div>
@@ -26,12 +22,6 @@
     [Parameter]
     public string Id { get; set; } = null!;
     private Project? _project;
-    private bool _isAuthorized = false;
-
-    protected override async Task OnInitializedAsync()
-    {
-        _isAuthorized = await _httpService.CheckAuthorizationAsync();
-    }
 
     protected override async Task OnParametersSetAsync()
     {

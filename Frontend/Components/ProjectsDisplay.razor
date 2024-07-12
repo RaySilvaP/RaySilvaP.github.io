@@ -1,18 +1,22 @@
 @using Shared.Models
+@using Frontend.Services
 @inherits ComponentBase
 @inject NavigationManager _navigator
+@inject HttpService _httpService
 
 <h3>Projects</h3>
-@if (Items != null)
+@if (_items != null)
 {
     <ol class="project-display">
-        @foreach (var item in Items)
+        @foreach (var item in _items)
         {
             <li class="project-display-item" @onclick="() => NavigateToDetails(item.Id)">
                 <ProjectDisplayItem Project="item" />
             </li>
         }
     </ol>
+    <Pagination TotalPages="_totalPages" ActivePageNumber="@_currentPageNumber" DisplayPages="5"
+        PageChanged="OnPageChangedAsync" />
 }
 else
 {
@@ -20,8 +24,19 @@ else
 }
 
 @code {
-    [Parameter, EditorRequired]
-    public List<ProjectDto>? Items { get; set; }
+    private List<ProjectDto>? _items;
+    private int _totalPages = 0, _currentPageNumber = 1;
+
+    protected override async Task OnInitializedAsync()
+    {
+        (_totalPages, _items) = await _httpService.GetProjectsAsync(_currentPageNumber);
+    }
+
+    private async Task OnPageChangedAsync(int newPageNumber)
+    {
+        _currentPageNumber = newPageNumber;
+        (_totalPages, _items) = await _httpService.GetProjectsAsync(_currentPageNumber);
+    }
 
     private void NavigateToDetails(string id)
     => _navigator.NavigateTo($"/projects/{id}");

@@ -1,21 +1,15 @@
-.project-form-properties{
+#project-form-properties{
     display: flex;
     flex-direction: column;
-    input{
-        margin-bottom: 10px;
-    }
 }
 
-.project-form-images{
+#project-form-images{
     display: flex;
     flex-wrap: wrap;
     flex-direction: column;
-    input{
-        margin-bottom: 10px;
-    }
 }
 
-.images-preview{
+#images-preview{
     display: flex;
     flex-wrap: wrap;
     justify-content: space-evenly;
@@ -26,4 +20,12 @@
         border: 1px solid gray; 
         margin-bottom: 10px;
     }
+}
+
+input{
+    margin-bottom: 10px;
+}
+
+textarea{
+    margin-bottom: 10px;
 }
