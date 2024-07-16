@@ -6,6 +6,10 @@ window.storeToken = (token) => {
     localStorage.setItem("AUTH_TOKEN", token);
 }
 
+window.deleteToken = () => {
+    localStorage.removeItem("AUTH_TOKEN");
+}
+
 window.previewImages = (inputElem, parentElem) => {
     for(const child in parentElem.children){
         URL.revokeObjectURL(child.src);
@@ -18,4 +22,13 @@ window.previewImages = (inputElem, parentElem) => {
         imgElem.src = url;
         parentElem.appendChild(imgElem);
     }
+}
+
+window.initializeCarousel = () =>
+{
+    $('#carousel').carousel({interval: 2000});
+    $('.carousel-control-prev').click ( 
+            () => $('#carousel').carousel('prev') );
+    $('.carousel-control-next').click ( 
+            () => $('#carousel').carousel('next') );
 }

@@ -8,9 +8,9 @@
     <div class="project">
         @if (_project != null)
         {
-            @if (_project.Thumbnail != null)
+            if (_project.Images != null)
             {
-                <img src="data:@_project.Thumbnail.Format;base64,@_project.Thumbnail.Base64String" />
+                <ImagesCarousel Images="_project.Images" />
             }
             <h1>@_project.Name</h1>
             <p>@_project.Description</p>
@@ -25,18 +25,44 @@
 
     protected override async Task OnParametersSetAsync()
     {
-        var project = await _httpService.GetProjectAsync(Id);
-        if (project == null)
-            _navigator.NavigateTo("/");
-        else
+        var projectDto = await _httpService.GetProjectAsync(Id);
+        if (projectDto == null)
         {
-            var thumbnail = await _httpService.GetImageAsync(project.ThumbnailId);
-            _project = new Project
-                {
-                    Name = project.Name,
-                    Description = project.Description,
-                    Thumbnail = thumbnail
-                };
+            _navigator.NavigateTo("/");
+            return;
+        }
+        _project = new Project
+            {
+                Name = projectDto.Name,
+                Description = projectDto.Description
+            };
+
+        await SetThumbnailAsync(projectDto.ThumbnailId);
+        if (projectDto.ImageIds != null)
+            await SetImagesAsync(projectDto.ImageIds);
+    }
+
+    private async Task SetThumbnailAsync(string thumbnailId)
+    {
+        if (_project == null)
+            return;
+
+        var thumbnail = await _httpService.GetImageAsync(thumbnailId);
+        _project.Thumbnail = thumbnail;
+    }
+
+    private async Task SetImagesAsync(IEnumerable<string> imageIds)
+    {
+        if (_project == null)
+            return;
+
+        _project.Images = [];
+
+        foreach (var id in imageIds)
+        {
+            var image = await _httpService.GetImageAsync(id);
+            if (image != null)
+                _project.Images.Add(image);
         }
     }
 }

@@ -15,8 +15,13 @@
             </li>
         }
     </ol>
-    <Pagination TotalPages="_totalPages" ActivePageNumber="@_currentPageNumber" DisplayPages="5"
-        PageChanged="OnPageChangedAsync" />
+    if (_totalPages > 1)
+    {
+        <div class="project-display-footer">
+            <Pagination TotalPages="_totalPages" ActivePageNumber="@_currentPageNumber" DisplayPages="5"
+                PageChanged="OnPageChangedAsync" />
+        </div>
+    }
 }
 else
 {

@@ -5,3 +5,7 @@ nav{
     align-items: center;
     font-size: 1.2rem;
 }
+
+.nav-link.active{
+    color: gray; 
+}
