@@ -3,66 +3,49 @@
 @page "/projects/{id}"
 @inject HttpService _httpService
 @inject NavigationManager _navigator
+@inject IJSRuntime _jSRuntime
 
-<div id="container">
-    <div class="project">
-        @if (_project != null)
+<div class="project">
+    @if (_project != null)
+    {
+        if (_project.ImageIds != null)
         {
-            if (_project.Images != null)
-            {
-                <ImagesCarousel Images="_project.Images" />
-            }
-            <h1>@_project.Name</h1>
-            <p>@_project.Description</p>
+            <ImagesCarousel ImageIds="@_project.ImageIds" />
         }
-    </div>
+        <div id="text">
+            <h1 id="title">@_project.Name</h1>
+            <p id="description" @ref="_description"></p>
+            <div id="more-info">
+                @if (_project.Github != string.Empty)
+                {
+                    <h2>Checkout:</h2>
+                    <label for="github">Github:</label>
+                    <a id="github" href="@_project.Github">@_project.Github</a>
+                }
+            </div>
+        </div>
+    }
 </div>
 
 @code {
     [Parameter]
     public string Id { get; set; } = null!;
-    private Project? _project;
+    private ProjectDto? _project;
+    private ElementReference _description;
 
     protected override async Task OnParametersSetAsync()
     {
-        var projectDto = await _httpService.GetProjectAsync(Id);
-        if (projectDto == null)
+        _project = await _httpService.GetProjectAsync(Id);
+        if (_project == null)
         {
             _navigator.NavigateTo("/");
             return;
         }
-        _project = new Project
-            {
-                Name = projectDto.Name,
-                Description = projectDto.Description
-            };
-
-        await SetThumbnailAsync(projectDto.ThumbnailId);
-        if (projectDto.ImageIds != null)
-            await SetImagesAsync(projectDto.ImageIds);
     }
 
-    private async Task SetThumbnailAsync(string thumbnailId)
+    protected override async Task OnAfterRenderAsync(bool firstRender)
     {
-        if (_project == null)
-            return;
-
-        var thumbnail = await _httpService.GetImageAsync(thumbnailId);
-        _project.Thumbnail = thumbnail;
-    }
-
-    private async Task SetImagesAsync(IEnumerable<string> imageIds)
-    {
-        if (_project == null)
-            return;
-
-        _project.Images = [];
-
-        foreach (var id in imageIds)
-        {
-            var image = await _httpService.GetImageAsync(id);
-            if (image != null)
-                _project.Images.Add(image);
-        }
+        if (_project != null)
+            await _jSRuntime.InvokeVoidAsync("setInnerHtml", _description, _project.Description);
     }
 }

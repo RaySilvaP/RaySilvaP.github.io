@@ -54,17 +54,10 @@ app.MapGet("/projects/{id}", async (string id, IRepository repository) =>
 
 app.MapPost("/projects", async (IRepository repository, IImageService service, HttpRequest request, PostProjectDto body) =>
 {
-    var project = new ProjectDto
-    {
-        Name = body.Name,
-        Description = body.Description,
-    };
-
     var url = $"{request.Scheme}://{request.Host.Value}/";
-
-    var isSuccess = await repository.InsertProjectAsync(project);
-    if (isSuccess)
-        return Results.Created(url + $"projects/{project.Id}", project);
+    var projectDto = await repository.InsertProjectAsync(body);
+    if (projectDto != null)
+        return Results.Created(url + $"projects/{projectDto.Id}", projectDto);
     else
         return Results.StatusCode(500);
 })

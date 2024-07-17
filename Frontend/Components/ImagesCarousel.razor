@@ -5,26 +5,29 @@
 <div class="carousel slide" data-ride="carousel" id="carousel">
     <div class="carousel-inner">
         <div class="carousel-item active">
-            <img src="data:@Images[0].Format;base64,@Images[0].Base64String" alt="" class="d-block w-100">
+            <ImageAsync ImageId="@ImageIds[0]" />
         </div>
-        @for (int i = 1; i < Images.Count; i++)
+        @for (int i = 1; i < ImageIds.Count; i++)
         {
             <div class="carousel-item">
-                <img src="data:@Images[i].Format;base64,@Images[i].Base64String" alt="" class="d-block w-100">
+                <ImageAsync ImageId="@ImageIds[i]" />
             </div>
         }
     </div>
-    <button class="carousel-control-prev" data-target="#carousel" data-slide="prev">
-        <span class="carousel-control-prev-icon"></span>
-    </button>
-    <button class="carousel-control-next" data-target="#carousel" data-slide="next">
-        <span class="carousel-control-next-icon"></span>
-    </button>
+    @if (ImageIds.Count > 1)
+    {
+        <button class="carousel-control-prev" data-target="#carousel" data-slide="prev">
+            <span class="carousel-control-prev-icon"></span>
+        </button>
+        <button class="carousel-control-next" data-target="#carousel" data-slide="next">
+            <span class="carousel-control-next-icon"></span>
+        </button>
+    }
 </div>
 
 @code {
     [Parameter, EditorRequired]
-    public List<Image> Images { get; set; } = null!;
+    public List<string> ImageIds { get; set; } = null!;
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
     {

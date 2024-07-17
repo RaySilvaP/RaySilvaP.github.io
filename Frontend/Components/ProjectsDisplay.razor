@@ -11,7 +11,11 @@
         @foreach (var item in _items)
         {
             <li class="project-display-item" @onclick="() => NavigateToDetails(item.Id)">
-                <ProjectDisplayItem Project="item" />
+                <ImageAsync ImageId="@item.ThumbnailId" />
+                <div class="project-display-item-body">
+                    <span class="project-display-item-title">@item.Name</span>
+                    <span class="project-display-item-description">@item.ShortDescription</span>
+                </div>
             </li>
         }
     </ol>
@@ -40,6 +44,7 @@ else
     private async Task OnPageChangedAsync(int newPageNumber)
     {
         _currentPageNumber = newPageNumber;
+        _items!.Clear();
         (_totalPages, _items) = await _httpService.GetProjectsAsync(_currentPageNumber);
     }
 

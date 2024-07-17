@@ -32,3 +32,8 @@ window.initializeCarousel = () =>
     $('.carousel-control-next').click ( 
             () => $('#carousel').carousel('next') );
 }
+
+window.setInnerHtml = (elem, text) =>
+{
+    elem.innerHTML = text;
+}

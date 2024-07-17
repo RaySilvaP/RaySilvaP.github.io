@@ -2,4 +2,27 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    margin-bottom: 10px;
+}
+
+::deep #carousel{
+    width: 70vw;
+    height: 39vw;
+    margin-bottom: 30px;
+}
+
+#text{
+    width: 100%;
+}
+
+#title{
+    text-align: center;
+}
+
+#description{
+    text-align: start;
+}
+
+p{
+    white-space: pre-wrap;
 }

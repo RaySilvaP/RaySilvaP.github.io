@@ -17,8 +17,12 @@
         <div id="project-form-properties">
             <label for="name">Name:</label>
             <input type="text" name="name" id="name" @bind-value="_project.Name">
+            <label for="short">Short description:</label>
+            <textarea rows="3" name="short" id="short" @bind="_project.ShortDescription"></textarea>
             <label for="description">Description:</label>
             <textarea rows="5" name="description" id="description" @bind="_project.Description"></textarea>
+            <label for="github">Github</label>
+            <input type="text" name="github" id="github" @bind-value="_project.Github">
         </div>
         <div id="project-form-buttons">
             <button @onclick="DeleteProject">Excluir</button>

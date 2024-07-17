@@ -51,18 +51,17 @@ public sealed class MongoDBRepository(IMongoClient client) : IRepository
         return (int)count;
     }
 
-    public async Task<bool> InsertProjectAsync(ProjectDto project)
+    public async Task<ProjectDto?> InsertProjectAsync(PostProjectDto project)
     {
         try
         {
-            var projectDto = (MongoProjectDto)project;
-            await Projects.InsertOneAsync(projectDto);
-            project.Id = projectDto.Id.ToString();
-            return true;
+            var mProjectDto = (MongoProjectDto)project;
+            await Projects.InsertOneAsync(mProjectDto);
+            return (ProjectDto)mProjectDto;
         }
         catch
         {
-            return false;
+            return null;
         }
     }
 
@@ -98,7 +97,10 @@ public sealed class MongoDBRepository(IMongoClient client) : IRepository
 
             var update = Builders<MongoProjectDto>.Update
             .Set(p => p.Name, project.Name)
-            .Set(p => p.Description, project.Description);
+            .Set(p => p.ShortDescription, project.ShortDescription)
+            .Set(p => p.Description, project.Description)
+            .Set(p => p.Github, project.Github);
+
 
             var result = await Projects.UpdateOneAsync(filter, update);
             return result.ModifiedCount > 0;
