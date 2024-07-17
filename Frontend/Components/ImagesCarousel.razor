@@ -5,12 +5,16 @@
 <div class="carousel slide" data-ride="carousel" id="carousel">
     <div class="carousel-inner">
         <div class="carousel-item active">
-            <ImageAsync ImageId="@ImageIds[0]" />
+            <div class="item-flex">
+                <ImageAsync ImageId="@ImageIds[0]" />
+            </div>
         </div>
         @for (int i = 1; i < ImageIds.Count; i++)
         {
             <div class="carousel-item">
-                <ImageAsync ImageId="@ImageIds[i]" />
+                <div class="item-flex">
+                    <ImageAsync ImageId="@ImageIds[i]" />
+                </div>
             </div>
         }
     </div>

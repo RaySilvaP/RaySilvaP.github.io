@@ -8,12 +8,14 @@
 <div class="project">
     @if (_project != null)
     {
+        <h1 id="title">@_project.Name</h1>
         if (_project.ImageIds != null)
         {
-            <ImagesCarousel ImageIds="@_project.ImageIds" />
+            <div id="display">
+                <ImagesCarousel ImageIds="@_project.ImageIds" />
+            </div>
         }
         <div id="text">
-            <h1 id="title">@_project.Name</h1>
             <p id="description" @ref="_description"></p>
             <div id="more-info">
                 @if (_project.Github != string.Empty)
