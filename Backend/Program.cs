@@ -151,6 +151,7 @@ Login login) =>
 });
 
 app.MapGet("/auth", () => Results.Ok())
-.RequireAuthorization();
+.RequireAuthorization()
+.WithOpenApi();
 
 app.Run();
