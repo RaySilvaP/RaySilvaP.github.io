@@ -7,12 +7,15 @@ namespace Backend.Installers;
 
 public static class JwtInstaller
 {
-    public static void AddJwtAuthorization(this IServiceCollection services)
+    public static void AddJwtAuthorization(this IServiceCollection services, IConfigurationRoot configuration)
     {
-        var configuration = services.BuildServiceProvider().GetRequiredService<IConfigurationRoot>();
-        var key = configuration.GetSection("Authentication:Key").Value!;
+        var key = configuration.GetSection("Authorization:Key").Value;
+        key ??= Environment.GetEnvironmentVariable("AUTH_KEY");
+        if (key == null)
+            throw new Exception("No authorization key found.");
+
         var keyBytes = Encoding.UTF8.GetBytes(key);
-        services.AddScoped<ITokenService, JwtTokenService>();
+        services.AddScoped<ITokenService>(sp => new JwtTokenService(key));
 
         services.AddAuthentication(JwtBearerDefaults.AuthenticationScheme)
         .AddJwtBearer(opts =>

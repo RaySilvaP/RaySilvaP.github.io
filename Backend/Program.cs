@@ -2,22 +2,16 @@ using Backend.Data;
 using Backend.Installers;
 using Backend.Models;
 using Backend.Services;
-using Microsoft.AspNetCore.Http.Extensions;
-using Microsoft.AspNetCore.Mvc;
-using Shared.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
 builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
-builder.Services.AddSingleton<IConfigurationRoot>(builder.Configuration);
-builder.Services.AddMongoDb();
-builder.Services.AddScoped<IRepository, MongoDBRepository>();
+builder.Services.AddMongoDb(builder.Configuration);
+builder.Services.AddJwtAuthorization(builder.Configuration);
 builder.Services.AddTransient<IImageService, ImageSharpService>();
 builder.Services.AddTransient<CredentialsService>();
-builder.Services.AddJwtAuthorization();
 builder.Services.AddAntiforgery();
-// builder.Services.AddTransient<HtmlService>();
 
 var app = builder.Build();
 
