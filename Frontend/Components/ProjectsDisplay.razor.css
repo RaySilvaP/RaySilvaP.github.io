@@ -1,6 +1,6 @@
 .project-display{
     display: flex;
-    flex-direction: column;
+    flex-wrap: wrap;
     flex: 1;
     justify-content: space-evenly;
     list-style: none;
@@ -15,36 +15,29 @@
 
 .project-display-item{
     display: flex;
-    height: 200px;
+    width: 30%;
+    height: 400px;
     margin-bottom: 10px;
-    border: 1px solid gray;
+    .card{
+        width: 100%;
+    }
+    overflow-y: hidden;
 }
 
 .project-display-item:hover{
     cursor: pointer;
 }
 
-.project-display-item-body{
+.img-frame{
     display: flex;
-    flex-direction: column;
-    flex: 1;
-    padding: 5px;
-}
-
-.project-display-item-title{
-    text-align: center;
-    font-size: calc(1rem + 0.4vw);
-    height: 15%;
-}
-
-.project-display-item-description{
-    height: 85%;
-    overflow: hidden;
+    width: 100%;
+    height: 56%;
+    justify-content: center;
+    background-color: black;
 }
 
 ::deep i{ 
-    width: 25%;
-    height: 100%;
+    width: 100%;
     font-size: 10vw;
     margin: auto;
     text-align: center;
@@ -53,15 +46,11 @@
 
 ::deep img{
     float: left;
-    width: 25%;
+    max-width: 100%;
     object-fit: cover;
     background-color: gray;
 }
 
-span{
-    width: 100%;
-    background-color: white;
-    text-overflow: clip;
-    overflow: hidden;
+h1{
     margin-bottom: 10px;
 }

@@ -4,18 +4,22 @@
 @inject NavigationManager _navigator
 @inject HttpService _httpService
 
-<h3>Projects</h3>
-@if (_items != null)
+<h1>Projects</h1>
+@if (_projects != null)
 {
     <ol class="project-display">
-        @foreach (var item in _items)
+        @foreach (var project in _projects)
         {
-            <li class="project-display-item" @onclick="() => NavigateToDetails(item.Id)">
-                <ImageAsync ImageId="@item.ThumbnailId" />
-                <div class="project-display-item-body">
-                    <span class="project-display-item-title">@item.Name</span>
-                    <span class="project-display-item-description">@item.ShortDescription</span>
-                </div>
+            <li class="project-display-item" @onclick="() => NavigateToDetails(project.Id)">
+                <Card>
+                    <div class="img-frame">
+                        <ImageAsync ImageId="@project.ThumbnailId" />
+                    </div>
+                    <CardBody>
+                        <CardTitle>@project.Name</CardTitle>
+                        <CardText>@project.ShortDescription</CardText>
+                    </CardBody>
+                </Card>
             </li>
         }
     </ol>
@@ -33,19 +37,20 @@ else
 }
 
 @code {
-    private List<ProjectDto>? _items;
+    private const short PAGE_SIZE = 9;
+    private List<ProjectDto>? _projects;
     private int _totalPages = 0, _currentPageNumber = 1;
 
     protected override async Task OnInitializedAsync()
     {
-        (_totalPages, _items) = await _httpService.GetProjectsAsync(_currentPageNumber);
+        (_totalPages, _projects) = await _httpService.GetProjectsAsync(_currentPageNumber, PAGE_SIZE);
     }
 
     private async Task OnPageChangedAsync(int newPageNumber)
     {
         _currentPageNumber = newPageNumber;
-        _items!.Clear();
-        (_totalPages, _items) = await _httpService.GetProjectsAsync(_currentPageNumber);
+        _projects!.Clear();
+        (_totalPages, _projects) = await _httpService.GetProjectsAsync(_currentPageNumber, PAGE_SIZE);
     }
 
     private void NavigateToDetails(string id)

@@ -1,4 +1,6 @@
-﻿@inherits LayoutComponentBase
+﻿@using Frontend.Services
+@inherits LayoutComponentBase
+@inject HttpService _httpService
 
 <div class="page">
     <div id="header">
@@ -12,4 +14,13 @@
             @Body
         </article>
     </main>
+    <Footer />
 </div>
+
+@code
+{
+    protected override async Task OnInitializedAsync()
+    {
+        await _httpService.CheckConnectionAsync();
+    }
+}

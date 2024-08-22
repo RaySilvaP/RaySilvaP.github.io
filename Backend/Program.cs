@@ -144,8 +144,9 @@ Login login) =>
     return Results.Unauthorized();
 });
 
-app.MapGet("/auth", () => Results.Ok())
-.RequireAuthorization()
-.WithOpenApi();
+app.MapMethods("/auth", new[] { "HEAD" }, () => Results.Ok())
+.RequireAuthorization();
+
+app.MapMethods("/", new[] { "HEAD", "OPTIONS" }, () => Results.Ok());
 
 app.Run();

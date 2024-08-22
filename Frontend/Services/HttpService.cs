@@ -9,25 +9,21 @@ using Shared.Models;
 
 namespace Frontend.Services;
 
-public class HttpService(HttpClient client, TokenService tokenService)
+public class HttpService(HttpClient client, TokenService tokenService, ILogger<HttpService> logger)
 {
     private readonly HttpClient _client = client;
     private readonly TokenService _tokenService = tokenService;
     private readonly JsonSerializerOptions _serializerOptions = new() { PropertyNameCaseInsensitive = true };
+    private readonly ILogger<HttpService> _logger = logger;
 
     public async Task<bool> LoginAsync(string username, string password)
     {
-        string json = JsonSerializer.Serialize(new
+        string json = JsonSerializer.Serialize(new { username, password });
+        using StringContent content = new(json, Encoding.UTF8, "application/json");
+        var request = new HttpRequestMessage(HttpMethod.Post, "/login")
         {
-            username,
-            password
-        });
-
-        using StringContent jsonContent = new(json, Encoding.UTF8, "application/json");
-
-        var request = new HttpRequestMessage(HttpMethod.Post, "/login");
-        request.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
-        request.Content = jsonContent;
+            Content = content
+        };
         try
         {
             var response = await _client.SendAsync(request);
@@ -40,8 +36,9 @@ public class HttpService(HttpClient client, TokenService tokenService)
             else
                 return false;
         }
-        catch
+        catch (Exception e)
         {
+            _logger.LogError(e, "Something went wrong");
             return false;
         }
     }
@@ -49,16 +46,16 @@ public class HttpService(HttpClient client, TokenService tokenService)
     public async Task<bool> CheckAuthorizationAsync()
     {
         var token = await _tokenService.GetTokenAsync();
-        var request = new HttpRequestMessage(HttpMethod.Get, "/auth");
-        request.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
+        var request = new HttpRequestMessage(HttpMethod.Head, "/auth");
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         try
         {
             var response = await _client.SendAsync(request);
             return response.IsSuccessStatusCode;
         }
-        catch
+        catch (Exception e)
         {
+            _logger.LogError(e, "Something went wrong");
             return false;
         }
     }
@@ -77,7 +74,7 @@ public class HttpService(HttpClient client, TokenService tokenService)
         }
         catch (Exception e)
         {
-            Console.WriteLine(e.Message);
+            _logger.LogError(e, "Something went wrong");
             return (0, null);
         }
     }
@@ -90,7 +87,7 @@ public class HttpService(HttpClient client, TokenService tokenService)
         }
         catch (Exception e)
         {
-            Console.WriteLine(e.Message);
+            _logger.LogError(e, "Something went wrong");
             return null;
         }
     }
@@ -99,23 +96,27 @@ public class HttpService(HttpClient client, TokenService tokenService)
     {
         string json = JsonSerializer.Serialize(project);
         var token = await _tokenService.GetTokenAsync();
-
-        using StringContent jsonContent = new(json, Encoding.UTF8, "application/json");
-
-        var request = new HttpRequestMessage(HttpMethod.Post, "/projects");
-        request.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
+        using StringContent content = new(json, Encoding.UTF8, "application/json");
+        var request = new HttpRequestMessage(HttpMethod.Post, "/projects")
+        {
+            Content = content
+        };
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        request.Content = jsonContent;
         try
         {
             var response = await _client.SendAsync(request);
-            var content = await response.Content.ReadFromJsonAsync<ProjectDto>();
-            project.Id = content.Id;
-            return true;
+            var body = await response.Content.ReadFromJsonAsync<ProjectDto>();
+            if (body == null)
+                return false;
+            else
+            {
+                project = body;
+                return true;
+            }
         }
         catch (Exception e)
         {
-            Console.WriteLine(e.Message);
+            _logger.LogError(e, "Something went wrong");
             return false;
         }
     }
@@ -124,12 +125,12 @@ public class HttpService(HttpClient client, TokenService tokenService)
     {
         var token = await _tokenService.GetTokenAsync();
         string json = JsonSerializer.Serialize(project);
-        using StringContent jsonContent = new(json, Encoding.UTF8, "application/json");
-
-        var request = new HttpRequestMessage(HttpMethod.Put, "/projects");
-        request.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
+        using StringContent content = new(json, Encoding.UTF8, "application/json");
+        var request = new HttpRequestMessage(HttpMethod.Put, "/projects")
+        {
+            Content = content
+        };
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        request.Content = jsonContent;
         try
         {
             var response = await _client.SendAsync(request);
@@ -137,7 +138,7 @@ public class HttpService(HttpClient client, TokenService tokenService)
         }
         catch (Exception e)
         {
-            Console.WriteLine(e.Message);
+            _logger.LogError(e, "Something went wrong");
             return false;
         }
     }
@@ -146,12 +147,12 @@ public class HttpService(HttpClient client, TokenService tokenService)
     {
         var token = await _tokenService.GetTokenAsync();
         string json = JsonSerializer.Serialize(new { id, image });
-        using StringContent jsonContent = new(json, Encoding.UTF8, "application/json");
-
-        var request = new HttpRequestMessage(HttpMethod.Put, "/projects/images");
-        request.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
+        using StringContent content = new(json, Encoding.UTF8, "application/json");
+        var request = new HttpRequestMessage(HttpMethod.Put, "/projects/images")
+        {
+            Content = content
+        };
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        request.Content = jsonContent;
         try
         {
             var response = await _client.SendAsync(request);
@@ -159,7 +160,7 @@ public class HttpService(HttpClient client, TokenService tokenService)
         }
         catch (Exception e)
         {
-            Console.WriteLine(e.Message);
+            _logger.LogError(e, "Something went wrong");
             return false;
         }
     }
@@ -168,7 +169,6 @@ public class HttpService(HttpClient client, TokenService tokenService)
     {
         var token = await _tokenService.GetTokenAsync();
         var request = new HttpRequestMessage(HttpMethod.Delete, $"/projects/{id}");
-        request.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
         try
         {
@@ -177,7 +177,7 @@ public class HttpService(HttpClient client, TokenService tokenService)
         }
         catch (Exception e)
         {
-            Console.WriteLine(e.Message);
+            _logger.LogError(e, "Something went wrong");
             return false;
         }
     }
@@ -189,8 +189,9 @@ public class HttpService(HttpClient client, TokenService tokenService)
             var image = await _client.GetFromJsonAsync<Image>($"/images/{id}");
             return image;
         }
-        catch
+        catch (Exception e)
         {
+            _logger.LogError(e, "Something went wrong");
             return null;
         }
     }
@@ -199,13 +200,12 @@ public class HttpService(HttpClient client, TokenService tokenService)
     {
         string json = JsonSerializer.Serialize(new { projectId, image });
         var token = await _tokenService.GetTokenAsync();
-
-        using StringContent jsonContent = new(json, Encoding.UTF8, "application/json");
-
-        var request = new HttpRequestMessage(HttpMethod.Post, "/images");
-        request.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
+        using StringContent content = new(json, Encoding.UTF8, "application/json");
+        var request = new HttpRequestMessage(HttpMethod.Post, "/images")
+        {
+            Content = content
+        };
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        request.Content = jsonContent;
         try
         {
             var response = await _client.SendAsync(request);
@@ -213,7 +213,7 @@ public class HttpService(HttpClient client, TokenService tokenService)
         }
         catch (Exception e)
         {
-            Console.WriteLine(e.Message);
+            _logger.LogError(e, "Something went wrong.");
             return false;
         }
     }
@@ -222,13 +222,12 @@ public class HttpService(HttpClient client, TokenService tokenService)
     {
         string json = JsonSerializer.Serialize(new { projectId, image });
         var token = await _tokenService.GetTokenAsync();
-
-        using StringContent jsonContent = new(json, Encoding.UTF8, "application/json");
-
-        var request = new HttpRequestMessage(HttpMethod.Post, "/images/thumbnails");
-        request.SetBrowserRequestCredentials(BrowserRequestCredentials.Include);
+        using StringContent content = new(json, Encoding.UTF8, "application/json");
+        var request = new HttpRequestMessage(HttpMethod.Post, "/images/thumbnails")
+        {
+            Content = content
+        };
         request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        request.Content = jsonContent;
         try
         {
             var response = await _client.SendAsync(request);
@@ -236,8 +235,21 @@ public class HttpService(HttpClient client, TokenService tokenService)
         }
         catch (Exception e)
         {
-            Console.WriteLine(e.Message);
+            _logger.LogError(e, "Something went wrong.");
             return false;
+        }
+    }
+
+    public async Task CheckConnectionAsync()
+    {
+        try
+        {
+            var request = new HttpRequestMessage(HttpMethod.Head, "/");
+            await _client.SendAsync(request);
+        }
+        catch (Exception e)
+        {
+            _logger.LogWarning(e, "Unable to connect to the server.");
         }
     }
 }
