@@ -1,0 +1,12 @@
+.contact{
+    display: flex;
+    align-items: center;
+    padding: 5px;
+    border: 1px solid gray;
+    border-radius: 10px;
+}
+
+a{
+    color: black;
+    text-decoration: none;
+}

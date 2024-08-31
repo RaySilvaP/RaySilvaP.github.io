@@ -8,9 +8,10 @@
     display: flex;
     height: fit-content;
     padding: 10px;
+    padding-right: 25%;
     background-color: lightgray;
     align-items: center;
-    justify-content: space-evenly;
+    justify-content: flex-end;
   }
   
   #logo {

@@ -1,0 +1,23 @@
+#contacts{
+    display: flex;
+    flex-direction: column;
+    height: 50vh;
+}
+
+#contacts-list{
+    display: flex;
+    align-items: center;
+    justify-content: space-evenly;
+    flex-wrap: wrap;
+    width: 100%;
+    flex: 1;
+}
+
+::deep .contact{
+    i{
+        font-size: var(--big-font-size);
+    };
+    span{
+        font-size: var(--big-font-size);
+    }
+}

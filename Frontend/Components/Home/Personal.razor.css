@@ -1,0 +1,26 @@
+#personal{
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    height: 90vh;
+    div{
+        width: 45%;
+    }
+}
+
+#identity{
+    display: flex;
+    justify-content: center;
+    padding: 5px;
+    height: 85%;
+}
+
+#my-img{
+    width: 100px;
+    height: 100px;
+    border-radius: 100%;
+}
+
+#text{  
+    font-size: var(--mid-font-size)
+}

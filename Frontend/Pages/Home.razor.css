@@ -1,0 +1,9 @@
+.indicator-down{
+    display: flex;
+    justify-content: center;
+    align-items: center;
+    height: 10vh;
+    i{
+        font-size: var(--big-font-size);
+    }
+}
