@@ -3,4 +3,8 @@
     --secondary-color: #7180B9;
     --accent-color: #CF5C36;
     --background-color: #EFD9CE;
+    
+    --big-font-size: calc(1.5rem + .5vw + .5vh);
+    --mid-font-size: calc(1rem + .5vw + .5vh);
+    --small-font-size: calc(0.5rem + .5vw + .5vh);
 }

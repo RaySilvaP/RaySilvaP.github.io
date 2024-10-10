@@ -1,7 +1,7 @@
 #contacts{
     display: flex;
     flex-direction: column;
-    height: 50vh;
+    height: fit-content;
 }
 
 #contacts-list{
@@ -11,13 +11,18 @@
     flex-wrap: wrap;
     width: 100%;
     flex: 1;
+    margin-bottom: 1rem;
 }
 
-::deep .contact{
-    i{
-        font-size: var(--big-font-size);
-    };
-    span{
-        font-size: var(--big-font-size);
-    }
+.contact{
+    display: flex;
+    align-items: center;
+    justify-content: space-between;
+    padding: 5px;
+    font-size: var(--mid-font-size);
+}
+
+a{
+    margin-left: 5px;
+    color: black;
 }

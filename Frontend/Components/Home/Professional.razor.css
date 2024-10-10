@@ -1,7 +1,7 @@
 #professional{
     display: flex;
     flex-direction: column;
-    height: 90vh;
+    height: 100vh;
 }
 
 #works{
