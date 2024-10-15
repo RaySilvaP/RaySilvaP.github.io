@@ -1,8 +1,14 @@
 :root{
-    --primary-color: #4BC6B9;
-    --secondary-color: #7180B9;
-    --accent-color: #CF5C36;
-    --background-color: #EFD9CE;
+    --background-color: white;
+    --text-light-color: gray;
+    --text-color: black;
+    --first-color: #011627;
+    --first-light-color: #05253f;
+    --first-dark-color: #00101d;
+    --second-color: #1A936F;
+    --second-light-color: #22a37c;
+    --second-dark-color: #12805f;
+    
     
     --big-font-size: calc(1.5rem + .5vw + .5vh);
     --mid-font-size: calc(1rem + .5vw + .5vh);

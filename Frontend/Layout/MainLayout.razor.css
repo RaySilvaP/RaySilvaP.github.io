@@ -2,6 +2,7 @@
     position: relative;
     display: flex;
     flex-direction: column;
+    background-color: var(--background-color);
   }
   
   #header {
@@ -9,7 +10,8 @@
     height: fit-content;
     padding: 10px;
     padding-right: 25%;
-    background-color: lightgray;
+    background-color: var(--first-color);
+    color: var(--background-color);
     align-items: center;
     justify-content: flex-end;
   }
@@ -27,10 +29,6 @@
   
   main {
     flex: 1;
-  }
-  
-  .sidebar {
-    background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
   }
   
   .top-row {

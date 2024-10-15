@@ -1,4 +1,34 @@
 #footer{
-    background-color: gray;
-    height: 7vh;
+    display: flex;
+    flex-direction: row;
+    justify-content: space-between;
+    align-items: end;
+    margin-top: 20px;
+    background-color: var(--first-color);
+    color: var(--background-color);
+    border-top: 1px solid var(--first-light-color);
+    padding: 5px;
+}
+
+#contacts{
+    display: flex;
+    flex-direction: column;
+    height: fit-content;
+}
+
+#contacts-list{
+    display: flex;
+    flex-direction: column;
+}
+
+.contact{
+    display: flex;
+    align-items: center;
+    padding: 5px;
+    font-size: var(--small-font-size);
+}
+
+a{
+    margin-left: 5px;
+    color: var(--background-color);
 }
