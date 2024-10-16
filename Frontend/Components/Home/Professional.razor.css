@@ -14,11 +14,10 @@
 
 ::deep .work{
     width: 30%;
-    height: 100%;
 }
 
 a{
     width: 100%;
-    color: var(--text-color);
+    color: white;
     text-align: center;
 }

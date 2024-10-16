@@ -2,7 +2,7 @@
     position: relative;
     display: flex;
     flex-direction: column;
-    background-color: var(--background-color);
+    background-image: url(dot-grid.webp);
   }
   
   #header {
