@@ -7,3 +7,28 @@
         font-size: var(--big-font-size);
     }
 }
+
+#contacts{
+    display: flex;
+    flex-direction: column;
+    height: fit-content;
+    margin-bottom: var(--extra-large-margin);
+}
+
+#contacts-list{
+    display: flex;
+    flex-direction: column;
+    align-items: center;
+}
+
+.contact{
+    display: flex;
+    align-items: center;
+    padding: var(--small-margin);
+    font-size: var(--mid-font-size);
+}
+
+a{
+    margin-left: var(--small-margin);
+    color: var(--text-color);
+}

@@ -6,28 +6,10 @@
     background-color: var(--first-color);
     color: var(--text-light-color);
     border-top: 2px solid var(--second-dark-color);
-    padding: 5px;
+    padding: var(--small-margin);
 }
 
-#contacts{
-    display: flex;
-    flex-direction: column;
-    height: fit-content;
-}
-
-#contacts-list{
-    display: flex;
-    flex-direction: row;
-}
-
-.contact{
-    display: flex;
-    align-items: center;
-    padding: 5px;
-    font-size: var(--small-font-size);
-}
-
-a{
-    margin-left: 5px;
-    color: var(--background-color);
+#copyright-text{
+    width: 100%;
+    text-align: end;
 }
