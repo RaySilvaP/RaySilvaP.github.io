@@ -10,8 +10,9 @@
 
 #identity{
     display: flex;
-    justify-content: center;
-    padding: 5px;
+    flex-direction: column;
+    padding: var(--small-margin);
+    padding-left: 15%;
     height: 85%;
 }
 
@@ -20,8 +21,14 @@
     height: 150px;
     border-radius: 100%;
     border: 5px solid var(--second-color);
+    margin-bottom: var(--small-margin);
 }
 
 #text{  
     font-size: var(--mid-font-size)
+}
+
+.contrast-text{
+    font-weight: bold;
+    color: var(--second-color);
 }
