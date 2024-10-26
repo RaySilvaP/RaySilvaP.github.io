@@ -8,12 +8,10 @@
   #header {
     display: flex;
     height: fit-content;
-    padding: 10px;
-    padding-right: 25%;
-    background-color: var(--first-color);
-    color: var(--background-color);
+    padding: var(--small-margin);
+    color: var(--text-light-color);
     align-items: center;
-    justify-content: flex-end;
+    justify-content: center;
   }
   
   #logo {

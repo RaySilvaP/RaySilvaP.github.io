@@ -1,6 +1,7 @@
 :root{
     --background-color: white;
-    --text-light-color: white;
+    --text-lighter-color: lightgray;
+    --text-light-color: dimgray;
     --text-color: black;
     --first-color: #011627;
     --first-light-color: #05253f;

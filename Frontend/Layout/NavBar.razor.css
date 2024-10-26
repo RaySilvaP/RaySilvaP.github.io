@@ -4,3 +4,11 @@ nav {
     grid-column-gap: 2vw;
   }
   
+.nav-item ::deep a.active {
+  text-decoration: underline;
+  text-decoration-color: var(--second-color);
+}
+
+.nav-item ::deep .nav-link:hover{
+  text-decoration: underline;
+}

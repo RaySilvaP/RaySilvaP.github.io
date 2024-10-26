@@ -1,11 +1,8 @@
 #footer{
     display: flex;
-    flex-direction: row;
     justify-content: space-between;
     align-items: end;
-    background-color: var(--first-color);
     color: var(--text-light-color);
-    border-top: 2px solid var(--second-dark-color);
     padding: var(--small-margin);
 }
 
