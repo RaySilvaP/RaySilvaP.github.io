@@ -1,20 +1,41 @@
 <div class="work">
     <Card>
         <div class="img-frame">
-            <img src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse3.mm.bing.net%2Fth%3Fid%3DOIP.Fll7WPtNT6jrz1oBP8GbCgHaHj%26pid%3DApi&f=1&ipt=3e7c47dc3af6129d4d2ad19b91e04686c7368fc4f485f52e4f06b05d885561f3&ipo=images"
-                alt="">
+            <img src="@ImageSrc" alt="">
         </div>
         <div class="card-bottom">
             <CardBody>
-                <CardTitle class="important-text">Title</CardTitle>
-                <CardText class="commom-text">
-                    Lorem Ipsum is simply dummy text of the printing and typesetting industry.
-                </CardText>
+                <CardTitle class="important-text">@Title</CardTitle>
+                <CardText class="commom-text">@ShortDescription</CardText>
             </CardBody>
             <CardFooter>
-                <Button Color="ButtonColor.Primary">View</Button>
-                <Button Color="ButtonColor.Secondary">Visit</Button>
+                <Button Color="ButtonColor.Primary" @onclick="_modal.ShowAsync">View</Button>
+                @if (CanVisit)
+                {
+                    <Button Color="ButtonColor.Secondary">Visit</Button>
+                }
             </CardFooter>
         </div>
     </Card>
 </div>
+
+<Modal Title="@Title" @ref="_modal">
+    <BodyTemplate>
+        @Description
+    </BodyTemplate>
+</Modal>
+
+@code
+{
+    [Parameter]
+    public string Title { get; set; } = string.Empty;
+    [Parameter]
+    public string Description { get; set; } = string.Empty;
+    [Parameter]
+    public string ShortDescription { get; set; } = string.Empty;
+    [Parameter]
+    public bool CanVisit { get; set; } = true;
+    [Parameter]
+    public string ImageSrc { get; set; } = string.Empty;
+    private Modal _modal = null!;
+}

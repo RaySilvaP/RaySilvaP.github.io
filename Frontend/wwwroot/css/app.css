@@ -39,7 +39,7 @@ a, .btn-link {
     font-size: var(--small-font-size);
 }
 
-.btn-primary:hover{
+.btn-primary:hover, .btn-primary:active, .btn:first-child:active{
     color: var(--text-color);
     background-color: var(--second-dark-color);
     border-color: var(--second-dark-color);
