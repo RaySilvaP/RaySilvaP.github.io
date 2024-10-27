@@ -1,3 +1,5 @@
+@inject NavigationManager _navigator
+
 <div class="work">
     <Card>
         <div class="img-frame">
@@ -9,7 +11,7 @@
                 <CardText class="commom-text">@ShortDescription</CardText>
             </CardBody>
             <CardFooter>
-                <Button Color="ButtonColor.Primary" @onclick="_modal.ShowAsync">View</Button>
+                <Button Color="ButtonColor.Primary" @onclick="() => _navigator.NavigateTo(ProjectUrl)">View</Button>
                 @if (CanVisit)
                 {
                     <Button Color="ButtonColor.Secondary">Visit</Button>
@@ -19,23 +21,16 @@
     </Card>
 </div>
 
-<Modal Title="@Title" @ref="_modal">
-    <BodyTemplate>
-        @Description
-    </BodyTemplate>
-</Modal>
-
 @code
 {
     [Parameter]
     public string Title { get; set; } = string.Empty;
-    [Parameter]
-    public string Description { get; set; } = string.Empty;
     [Parameter]
     public string ShortDescription { get; set; } = string.Empty;
     [Parameter]
     public bool CanVisit { get; set; } = true;
     [Parameter]
     public string ImageSrc { get; set; } = string.Empty;
-    private Modal _modal = null!;
+    [Parameter]
+    public string ProjectUrl { get; set; } = string.Empty;
 }
