@@ -9,7 +9,7 @@ public static class JwtInstaller
 {
     public static void AddJwtAuthorization(this IServiceCollection services, IConfigurationRoot configuration)
     {
-        var key = configuration.GetSection("Authorization:Key").Value;
+        var key = configuration.GetSection("Authentication:Key").Value;
         key ??= Environment.GetEnvironmentVariable("AUTH_KEY");
         if (key == null)
             throw new Exception("No authorization key found.");

@@ -29,9 +29,12 @@ public class ImageSharpService : IImageService
         using var stream = new MemoryStream(bytes);
         using var tempStream = new MemoryStream();
         using var imageStream = await Image.LoadAsync(stream);
-        var width = imageStream.Width / 3;
-        var height = imageStream.Height / 3;
-
+        var width = imageStream.Width;
+        var height = imageStream.Height;
+        if(image.Size > 30000) {
+            width /= 3;
+            height /= 3;
+        }
         imageStream.Mutate(x => x.Resize(width, height));
         await imageStream.SaveAsJpegAsync(tempStream);
         bytes = tempStream.ToArray();

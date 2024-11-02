@@ -16,17 +16,15 @@
 
 #text{
     width: 100%;
-    padding-top: 30px;
-    padding-left: 10px;
-    padding-right: 10px;
-    padding-bottom: 30px;
-    margin-top: 30px;
-    background-color: beige;
+    padding-top: var(--large-margin);
+    padding-left: var(--mid-margin);
+    padding-right: var(--mid-margin);
+    margin-top: var(--large-margin);
 }
 
 #title{
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: var(--big-margin);
 }
 
 #description{
@@ -34,21 +32,14 @@
 }
 
 #more-info{
-    padding-top: 10px;
+    padding-top: var(--mid-margin);
 }
 
 ::deep h3{
     margin-bottom: 0px; 
 }
 
-::deep #carousel{
-    width: 84vw;
-    height: 39vw;
-    padding-left: 7vw;
-    padding-right: 7vw;
-}
-
-::deep .carousel-control-prev, ::deep .carousel-control-next{
-    width: 7vw;
-    background-color: black;
+img {
+    width: 10%;
+    margin-bottom: var(--mid-margin);
 }

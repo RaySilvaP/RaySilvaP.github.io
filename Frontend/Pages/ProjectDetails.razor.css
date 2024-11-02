@@ -2,6 +2,7 @@
     display: flex;
     flex-direction: column;
     align-items: center;
+    min-height: 100vh;
 }
 
 #display{
@@ -11,22 +12,20 @@
     width: 100vw;
     height: fit-content;
     background-color: black;
+    margin-bottom: var(--big-margin);
 }
 
 #text{
     width: 100%;
-    border-top: 1px solid gray;
-    padding-top: 30px;
-    padding-left: 10px;
-    padding-right: 10px;
-    padding-bottom: 30px;
-    margin-top: 30px;
-    background-color: beige;
+    padding-top: var(--large-margin);
+    padding-left: var(--mid-margin);
+    padding-right: var(--mid-margin);
+    margin-top: var(--large-margin);
 }
 
 #title{
     text-align: center;
-    margin-bottom: 20px;
+    margin-bottom: var(--big-margin);
 }
 
 #description{
@@ -34,11 +33,7 @@
 }
 
 #more-info{
-    padding-top: 10px;
-}
-
-p{
-    white-space: pre-wrap;
+    padding-top: var(--mid-margin);
 }
 
 ::deep h3{

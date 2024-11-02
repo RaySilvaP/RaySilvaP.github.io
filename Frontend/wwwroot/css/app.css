@@ -5,6 +5,10 @@
     font-weight: bold;
 }
 
+.paragraph {
+    text-indent: var(--mid-margin);
+}
+
 .important-text{
     font-size: var(--mid-font-size);
     font-weight: bold;

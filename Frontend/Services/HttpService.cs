@@ -110,7 +110,7 @@ public class HttpService(HttpClient client, TokenService tokenService, ILogger<H
                 return false;
             else
             {
-                project = body;
+                project.Id = body.Id;
                 return true;
             }
         }

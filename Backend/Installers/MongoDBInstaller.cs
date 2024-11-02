@@ -11,6 +11,7 @@ public static class MongoDBInstaller
         connectionString ??= Environment.GetEnvironmentVariable("MONGODB_URI");
         if (connectionString == null)
             throw new Exception("No Mongo connection string found.");
+
         services.AddSingleton<IMongoClient>(new MongoClient(connectionString));
         services.AddScoped<IRepository, MongoDBRepository>();
     }

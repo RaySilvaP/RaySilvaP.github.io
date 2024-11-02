@@ -1,0 +1,79 @@
+@page "/projects/storagemanager"
+@using Shared.Models
+@inject IJSRuntime _jS
+
+<div class="project">
+    <img src="borracharia-icon.svg">
+    <h1 id="title">@_project.Name</h1>
+    <div id="text" class="commom-text">
+        <p id="description" @ref="_description"></p>
+        <div id="more-info">
+            @if (_project.Github != string.Empty)
+            {
+                <h2>Checkout:</h2>
+                <label for="github">Github:</label>
+                <a id="github" href="@_project.Github">@_project.Github</a>
+            }
+        </div>
+    </div>
+</div>
+
+@code
+{
+    private Project _project = null!;
+    private ElementReference _description;
+
+    protected override void OnInitialized()
+    {
+        SetProject();
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            await _jS.InvokeVoidAsync("initializeCarousel");
+
+
+        if (_project != null)
+            await _jS.InvokeVoidAsync("setInnerHtml", _description, _project.Description);
+    }
+
+    private void SetProject()
+    {
+        _project = new()
+            {
+                Name = "Storage Manager",
+                Description =
+            @"
+<h2 class=""important-text"">Introduction</h2>
+
+<p class=""paragraph"">A relative who owns a small tire shop asked me to help find a solution for managing their storage.
+They wanted software that would be easy for both themselves and their employees to access and use, so I suggested a mobile app.</p>
+
+<h2 class=""important-text"">Objective</h2>
+
+<p class=""paragraph"">My goal was to create a mobile app to manage the storage for a small tire shop, with an emphasis on simplicity and ease of use. 
+I chose the .NET MAUI Blazor hybrid app project template, allowing me to leverage my HTML, CSS, and C# skills to build the app without spending too much 
+time learning new technologies.</p>
+
+<h2 class=""important-text"">DataBase - SQLite</h2>
+
+<p class=""paragraph"">Deciding how to store the data wasn’t easy at first. I initially tried using MongoDB, but it wasn’t a good fit due to 
+its complexity and reliance on an internet connection. After some research, I found an ideal solution: SQLite. It allowed me to store the database 
+locally on the device, eliminating the need for internet access and keeping the application straightforward while still providing easy data management 
+with an ORM. Implementation was also manageable, thanks to some excellent libraries that made SQLite compatible with my mobile app development setup.</p>
+
+<h2 class=""important-text"">App features:</h2>
+
+<ul>
+<li>Create a product;</li>
+<li>Delete a product;</li>
+<li>Edit a product;</li>
+<li>Regist a purchase;</li>
+<li>Regist a sale;</li>
+<li>See statistics of product flow;</li>
+<li>See mouth profit history;</li>
+</ul>"
+            };
+    }
+}

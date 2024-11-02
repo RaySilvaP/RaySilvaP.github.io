@@ -8,13 +8,13 @@
 <div class="project">
     @if (_project != null)
     {
-        <h1 id="title">@_project.Name</h1>
         if (_project.ImageIds != null)
         {
             <div id="display">
                 <ImagesCarousel ImageIds="@_project.ImageIds" />
             </div>
         }
+        <h1 id="title">@_project.Name</h1>
         <div id="text">
             <p id="description" @ref="_description"></p>
             <div id="more-info">
