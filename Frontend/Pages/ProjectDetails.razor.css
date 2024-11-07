@@ -8,8 +8,7 @@
 #display{
     display: flex;
     justify-content: center;
-    align-items: center; 
-    width: 100vw;
+    align-items: center;
     height: fit-content;
     background-color: black;
     margin-bottom: var(--big-margin);
