@@ -5,25 +5,29 @@ namespace Backend.Data;
 
 public interface IRepository
 {
-    Task<IEnumerable<ProjectDto>> GetProjectsAsync(int skip, int take);
+    Task<IEnumerable<Project>> GetProjectsAsync(int skip, int take);
 
-    Task<ProjectDto?> GetProjectAsync(string id);
+    Task<Project?> GetProjectAsync(string id);
 
     Task<int> GetProjectsCountAsync();
 
-    Task<ProjectDto?> InsertProjectAsync(PostProjectDto project);
+    Task<Project?> InsertProjectAsync(PostProjectDto project);
 
-    Task<bool> DeleteProjectAsync(string id);
+    Task DeleteProjectAsync(string id);
 
-    Task<bool> UpdateProjectAsync(PutProjectDto project);
+    Task UpdateProjectAsync(PutProjectDto project);
 
-    Task<Image?> GetImageAsync(string id);
+    Task<Image?> GetProjectThumbnailAsync(string projectId);
 
-    Task<bool> InsertImageAsync(string projectId, Image image);
+    Task<List<Image>> GetProjectImagesAsync(string projectId); 
 
-    Task<bool> InsertThumbnailAsync(string projectId, Image thumbnail);
+    Task PushImageToProjectAsync(string projectId, Image image);
 
-    Task<bool> DeleteImageAsync(string id);
+    Task SetProjectThumbnailAsync(string projectId, Image thumbnail);
+
+    Task DeleteProjectImageAsync(string projectId, string imageId);
+
+    Task DeleteProjectImagesAsync(string projectId);
 
     Task<Admin?> GetAdminAsync(string username);
 }

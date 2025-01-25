@@ -59,34 +59,26 @@ app.MapPost("/projects", async (IRepository repository, IImageService service, H
 
 app.MapDelete("/projects/{id}", async (IRepository repository, string id) =>
 {
-    var wasDeleted = await repository.DeleteProjectAsync(id);
-    if (wasDeleted)
-        return Results.Ok();
-    else
-        return Results.NotFound();
+    await repository.DeleteProjectAsync(id);
+    return Results.Ok();
 })
 .RequireAuthorization();
 
 app.MapPut("/projects", async (IRepository repository, PutProjectDto body) =>
 {
-    var wasModified = await repository.UpdateProjectAsync(body);
-    if (wasModified)
-        return Results.Ok();
-    else
-        return Results.NotFound();
+    await repository.UpdateProjectAsync(body);
+    return Results.Ok();
 })
 .RequireAuthorization();
 
-app.MapGet("/images/{id}", async (IRepository repository, string id) =>
+app.MapGet("/projects/{id}/images", async (IRepository repository, string id) =>
 {
-    var image = await repository.GetImageAsync(id);
-    if (image == null)
-        return Results.NotFound();
-    else
-        return Results.Ok(image);
+    var images = await repository.GetProjectImagesAsync(id);
+    
+    return Results.Ok(images);
 });
 
-app.MapPost("/images", async (IRepository repository, IImageService service, PostImageDto body) =>
+app.MapPost("/projects/images", async (IRepository repository, IImageService service, PostImageDto body) =>
 {
     var isValid = await service.IsImageValidAsync(body.Image);
     if (!isValid)
@@ -95,15 +87,12 @@ app.MapPost("/images", async (IRepository repository, IImageService service, Pos
     if (body.Image.Format != "image/gif")
         await service.CompressAsync(body.Image);
 
-    var isSuccess = await repository.InsertImageAsync(body.ProjectId, body.Image);
-    if (isSuccess)
-        return Results.Ok();
-    else
-        return Results.NotFound();
+    await repository.PushImageToProjectAsync(body.ProjectId, body.Image);
+    return Results.Ok();
 })
 .RequireAuthorization();
 
-app.MapPost("/images/thumbnails", async (IRepository repository, IImageService service, PostImageDto body) =>
+app.MapPost("projects/thumbnails", async (IRepository repository, IImageService service, PostImageDto body) =>
 {
     var isValid = await service.IsImageValidAsync(body.Image);
     if (!isValid)
@@ -111,21 +100,15 @@ app.MapPost("/images/thumbnails", async (IRepository repository, IImageService s
 
     var thumbnail = await service.CreateThumbnailAsync(body.Image);
 
-    var isSuccess = await repository.InsertThumbnailAsync(body.ProjectId, thumbnail);
-    if (isSuccess)
-        return Results.Ok();
-    else
-        return Results.NotFound();
+    await repository.SetProjectThumbnailAsync(body.ProjectId, thumbnail);
+    return Results.Ok();
 })
 .RequireAuthorization();
 
-app.MapDelete("/images/{id}", async (IRepository repository, string id) =>
+app.MapDelete("project/{projectId}images/{imageId}", async (IRepository repository,string projectId, string imageId) =>
 {
-    var wasDeleted = await repository.DeleteImageAsync(id);
-    if (wasDeleted)
-        return Results.Ok();
-    else
-        return Results.NotFound();
+    await repository.DeleteProjectImageAsync(projectId, imageId);
+    return Results.Ok();
 })
 .RequireAuthorization();
 
@@ -141,12 +124,14 @@ Login login) =>
         var token = tokenService.GenerateToken();
         return Results.Ok(token);
     }
-    return Results.Unauthorized();
+    return Results.Forbid();
 });
 
-app.MapMethods("/auth", new[] { "HEAD" }, () => Results.Ok())
+var methods = new [] {"HEAD"};
+
+app.MapMethods("/auth", methods, () => Results.Ok())
 .RequireAuthorization();
 
-app.MapMethods("/", new[] { "HEAD", "OPTIONS" }, () => Results.Ok());
+app.MapMethods("/", methods, () => Results.Ok());
 
 app.Run();

@@ -16,6 +16,7 @@ public class CredentialsService(IRepository repository)
 
         var hasher = new PasswordHasher<string>();
         var result = hasher.VerifyHashedPassword(login.Username, admin.PasswordHash, login.Password);
+
         return result == PasswordVerificationResult.Success || result == PasswordVerificationResult.SuccessRehashNeeded;
     }
 }

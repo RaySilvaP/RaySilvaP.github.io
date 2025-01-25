@@ -1,8 +1,7 @@
+using System.Security.Cryptography;
 using Backend.Models;
-using Backend.Services;
 using MongoDB.Bson;
 using MongoDB.Driver;
-using MongoDB.Driver.Core.Authentication;
 using MongoDB.Driver.Linq;
 using Shared.Models;
 
@@ -11,10 +10,11 @@ namespace Backend.Data;
 public sealed class MongoDBRepository(IMongoClient client) : IRepository
 {
     private readonly IMongoDatabase _database = client.GetDatabase("db");
-    private IMongoCollection<MongoProjectDto> Projects => _database.GetCollection<MongoProjectDto>("projects");
-    private IMongoCollection<MongoImageDto> Images => _database.GetCollection<MongoImageDto>("images");
+    private IMongoCollection<Project> Projects => _database.GetCollection<Project>("projects");
+    private IMongoCollection<BsonDocument> BsonProjects => _database.GetCollection<BsonDocument>("projects");
+    private IMongoCollection<Image> Images => _database.GetCollection<Image>("images");
 
-    public async Task<IEnumerable<ProjectDto>> GetProjectsAsync(int skip, int take)
+    public async Task<IEnumerable<Project>> GetProjectsAsync(int skip, int take)
     {
         var projects = await Projects
         .AsQueryable()
@@ -22,152 +22,119 @@ public sealed class MongoDBRepository(IMongoClient client) : IRepository
         .Take(take)
         .ToListAsync();
 
-        return projects.Select(p => (ProjectDto)p);
+        return projects;
     }
 
-    public async Task<ProjectDto?> GetProjectAsync(string id)
+    public async Task<Project?> GetProjectAsync(string id)
     {
-        try
-        {
-            var filter = Builders<MongoProjectDto>.Filter.Eq(p => p.Id, new ObjectId(id));
-            var project = await Projects.Find(filter).FirstOrDefaultAsync();
-            if (project == null)
-                return null;
-            else
-            {
-                return (ProjectDto)project;
-            }
-        }
-        catch
-        {
-            return null;
-        }
+        var filter = Builders<Project>.Filter.Eq(p => p.Id, id);
+        return await Projects.Find(filter).FirstOrDefaultAsync();
     }
 
     public async Task<int> GetProjectsCountAsync()
     {
-        var filter = Builders<MongoProjectDto>.Filter.Empty;
+        var filter = Builders<Project>.Filter.Empty;
         var count = await Projects.CountDocumentsAsync(filter);
         return (int)count;
     }
 
-    public async Task<ProjectDto?> InsertProjectAsync(PostProjectDto project)
+    public async Task<Project?> InsertProjectAsync(PostProjectDto dto)
     {
-        try
-        {
-            var mProjectDto = (MongoProjectDto)project;
-            await Projects.InsertOneAsync(mProjectDto);
-            return (ProjectDto)mProjectDto;
-        }
-        catch
-        {
-            return null;
-        }
+        var project = new Project{
+            Name = dto.Name,
+            ShortDescription = dto.ShortDescription,
+            Description = dto.Description,
+            Github = dto.Github
+
+        };
+        await Projects.InsertOneAsync(project);
+        return project;
     }
 
-    public async Task<bool> DeleteProjectAsync(string id)
+    public async Task DeleteProjectAsync(string id)
     {
-        try
-        {
-            var filter = Builders<MongoProjectDto>.Filter.Eq(p => p.Id, new ObjectId(id));
-            var project = await Projects.Find(filter).FirstOrDefaultAsync();
-            await DeleteImageAsync(project.ThumbnailId);
-            if (project.ImageIds != null)
-            {
-                foreach (var imageId in project.ImageIds)
-                {
-                    await DeleteImageAsync(imageId);
-                }
-            }
-            var result = await Projects.DeleteOneAsync(filter);
-            return result.DeletedCount > 0;
-        }
-        catch
-        {
-            return false;
-        }
+        var filter = Builders<BsonDocument>.Filter.Eq("_id", id);
+        var project = await BsonProjects.Find(filter).FirstAsync();
+
+        var thumbnailId = project.GetElement("thumbnailId").Value.AsString;
+        await DeleteImageAsync(thumbnailId);
+        var imageIds = project.GetElement("imageIds").Value.AsBsonArray.Values.Select(v => v.AsString);
+        await DeleteImagesAsync(imageIds);
+        await BsonProjects.DeleteOneAsync(filter);
     }
 
-    public async Task<bool> UpdateProjectAsync(PutProjectDto project)
+    public async Task UpdateProjectAsync(PutProjectDto project)
     {
-        try
-        {
-            var filter = Builders<MongoProjectDto>.Filter
-            .Eq(p => p.Id, new ObjectId(project.Id));
+        var filter = Builders<Project>.Filter
+        .Eq(p => p.Id, project.Id);
 
-            var update = Builders<MongoProjectDto>.Update
-            .Set(p => p.Name, project.Name)
-            .Set(p => p.ShortDescription, project.ShortDescription)
-            .Set(p => p.Description, project.Description)
-            .Set(p => p.Github, project.Github);
+        var update = Builders<Project>.Update
+        .Set(p => p.Name, project.Name)
+        .Set(p => p.ShortDescription, project.ShortDescription)
+        .Set(p => p.Description, project.Description)
+        .Set(p => p.Github, project.Github);
 
 
-            var result = await Projects.UpdateOneAsync(filter, update);
-            return result.ModifiedCount > 0;
-        }
-        catch
-        {
-            return false;
-        }
+        await Projects.UpdateOneAsync(filter, update);
     }
 
-    public async Task<Image?> GetImageAsync(string id)
+    public async Task<Image?> GetProjectThumbnailAsync(string projectId)
     {
-        try
-        {
-            var filter = Builders<MongoImageDto>.Filter.Eq(i => i.Id, new ObjectId(id));
-
-            var imageDto = await Images.Find(filter).FirstOrDefaultAsync();
-            return (Image)imageDto;
-        }
-        catch
-        {
-            return null;
-        }
+        var projectFilter = Builders<BsonDocument>.Filter.Eq("_id", projectId);
+        var project = await BsonProjects.Find(projectFilter).FirstAsync();
+        var thumbnailId = project.GetElement("thumbnailId").Value.AsString;
+        var imageFilter = Builders<Image>.Filter.Eq(i => i.Id, thumbnailId);
+        var thumbnail = await Images.Find(imageFilter).FirstOrDefaultAsync();
+        return thumbnail;
     }
 
-    public async Task<bool> InsertImageAsync(string projectId, Image image)
+    public async Task<List<Image>> GetProjectImagesAsync(string projectId)
     {
-        try
-        {
-            var imageDto = (MongoImageDto)image;
-            await Images.InsertOneAsync(imageDto);
-            var isSuccess = await AddProjectImageAsync(projectId, imageDto);
-            return isSuccess;
-        }
-        catch
-        {
-            return false;
-        }
+        var projectFilter = Builders<BsonDocument>.Filter.Eq("_id", projectId);
+        var project = await BsonProjects.Find(projectFilter).FirstAsync();
+        var imageIds = project.GetElement("imageIds").Value.AsBsonArray.Values.Select(v => v.ToString());
+        var imageFilter = Builders<Image>.Filter.In(i => i.Id, imageIds);
+        return await Images.Find(imageFilter).ToListAsync();
     }
 
-    public async Task<bool> InsertThumbnailAsync(string projectId, Image thumbnail)
+    public async Task PushImageToProjectAsync(string projectId, Image image)
     {
-        try
-        {
-            var imageDto = (MongoImageDto)thumbnail;
-            await Images.InsertOneAsync(imageDto);
-            var isSuccess = await SetProjectThumbnailAsync(projectId, imageDto.Id.ToString());
-            return isSuccess;
-        }
-        catch
-        {
-            return false;
-        }
+        await Images.InsertOneAsync(image);
+
+        var filter = Builders<BsonDocument>.Filter.Eq("_id", projectId);
+        var update = Builders<BsonDocument>.Update.Push("imageIds", image.Id);
+        await BsonProjects.UpdateOneAsync(filter, update);
     }
 
-    public async Task<bool> DeleteImageAsync(string id)
+    public async Task SetProjectThumbnailAsync(string projectId, Image thumbnail)
     {
-        try
-        {
-            var filter = Builders<MongoImageDto>.Filter.Eq(i => i.Id, new ObjectId(id));
-            var result = await Images.DeleteOneAsync(filter);
-            return result.DeletedCount > 0;
-        }
-        catch
-        {
-            return false;
-        }
+        await Images.InsertOneAsync(thumbnail);
+        await DeleteThumbnailAsync(projectId);
+        var filter = Builders<BsonDocument>.Filter.Eq("_id", projectId);
+        var update = Builders<BsonDocument>.Update.Set("thumbnailId", thumbnail.Id);
+        await BsonProjects.UpdateOneAsync(filter, update);
+
+    }
+
+    public async Task DeleteProjectImageAsync(string projectId, string imageId)
+    {
+        var filter = Builders<BsonDocument>.Filter.Eq("_id", projectId);
+        var project = await BsonProjects.Find(filter).FirstAsync();
+        var imageIds = project.GetElement("imageIds").Value.AsBsonArray.Values
+        .Select(v => v.AsString)
+        .ToList()
+        .Remove(imageId);
+        var update = Builders<BsonDocument>.Update.Set("imageIds", imageIds);
+        await BsonProjects.UpdateOneAsync(filter, update);
+        await DeleteImageAsync(imageId);
+    }
+
+    public async Task DeleteProjectImagesAsync(string projectId)
+    {
+        var filter = Builders<BsonDocument>.Filter.Eq("_id", projectId);
+        var project = await BsonProjects.Find(filter).FirstAsync();
+        var imageIds = project.GetElement("imageIds").Value.AsBsonArray.Values.Select(v => v.AsString);
+        await DeleteImagesAsync(imageIds);
     }
 
     public async Task<Admin?> GetAdminAsync(string username)
@@ -188,59 +155,24 @@ public sealed class MongoDBRepository(IMongoClient client) : IRepository
             };
     }
 
-    private async Task<bool> AddProjectImageAsync(string projectId, MongoImageDto imageDto)
-    {
-        try
-        {
-            var project = await GetProjectAsync(projectId);
-            if (project != null)
-            {
-                if (project.ImageIds == null)
-                    project.ImageIds = [imageDto.Id.ToString()];
-                else
-                    project.ImageIds.Add(imageDto.Id.ToString());
-
-                var filter = Builders<MongoProjectDto>.Filter
-                .Eq(p => p.Id, new ObjectId(project.Id));
-
-                var update = Builders<MongoProjectDto>.Update
-                .Set(p => p.ImageIds, project.ImageIds);
-
-                await Projects.UpdateOneAsync(filter, update);
-                return true;
-            }
-            else
-                return false;
-        }
-        catch
-        {
-            return false;
-        }
-    }
-
-    private async Task<bool> SetProjectThumbnailAsync(string projectId, string thumbnailId)
-    {
-        try
-        {
-            await DeleteThumbnailAsync(projectId);
-
-            var filter = Builders<MongoProjectDto>.Filter
-            .Eq(p => p.Id, new ObjectId(projectId));
-            var update = Builders<MongoProjectDto>.Update
-            .Set(p => p.ThumbnailId, thumbnailId);
-
-            var result = await Projects.UpdateOneAsync(filter, update);
-            return result.ModifiedCount > 0;
-        }
-        catch
-        {
-            return false;
-        }
-    }
-
     private async Task DeleteThumbnailAsync(string projectId)
     {
-        var project = await GetProjectAsync(projectId);
-        await DeleteImageAsync(project!.ThumbnailId);
+        var thumbnail = await GetProjectThumbnailAsync(projectId);
+        if(thumbnail == null)
+            return;
+
+        await DeleteImageAsync(thumbnail.Id);
+    }
+
+    private async Task DeleteImageAsync(string id)
+    {
+        var filter = Builders<Image>.Filter.Eq(i => i.Id, id);
+        await Images.DeleteOneAsync(filter);
+    }
+
+    private async Task DeleteImagesAsync(IEnumerable<string> imageIds)
+    {
+        var filter = Builders<Image>.Filter.In(i => i.Id, imageIds);
+        await Images.DeleteManyAsync(filter);
     }
 }
