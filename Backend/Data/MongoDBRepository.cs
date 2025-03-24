@@ -40,7 +40,8 @@ public sealed class MongoDBRepository(IMongoClient client) : IRepository
 
     public async Task<Project?> InsertProjectAsync(PostProjectDto dto)
     {
-        var project = new Project{
+        var project = new Project
+        {
             Name = dto.Name,
             ShortDescription = dto.ShortDescription,
             Description = dto.Description,
@@ -53,13 +54,15 @@ public sealed class MongoDBRepository(IMongoClient client) : IRepository
 
     public async Task DeleteProjectAsync(string id)
     {
-        var filter = Builders<BsonDocument>.Filter.Eq("_id", id);
+        var filter = Builders<BsonDocument>.Filter.Eq("_id", new ObjectId(id));
         var project = await BsonProjects.Find(filter).FirstAsync();
 
-        var thumbnailId = project.GetElement("thumbnailId").Value.AsString;
-        await DeleteImageAsync(thumbnailId);
-        var imageIds = project.GetElement("imageIds").Value.AsBsonArray.Values.Select(v => v.AsString);
-        await DeleteImagesAsync(imageIds);
+        if(project.TryGetElement("thumbnailId", out BsonElement thumbnailId))
+            await DeleteImageAsync(thumbnailId.Value.AsString);
+
+        if(project.TryGetElement("imageIds", out BsonElement imageIds))
+            await DeleteImagesAsync(imageIds.Value.AsBsonArray.Values.Select(v => v.AsString));
+
         await BsonProjects.DeleteOneAsync(filter);
     }
 
@@ -158,7 +161,7 @@ public sealed class MongoDBRepository(IMongoClient client) : IRepository
     private async Task DeleteThumbnailAsync(string projectId)
     {
         var thumbnail = await GetProjectThumbnailAsync(projectId);
-        if(thumbnail == null)
+        if (thumbnail == null)
             return;
 
         await DeleteImageAsync(thumbnail.Id);
@@ -174,5 +177,15 @@ public sealed class MongoDBRepository(IMongoClient client) : IRepository
     {
         var filter = Builders<Image>.Filter.In(i => i.Id, imageIds);
         await Images.DeleteManyAsync(filter);
+    }
+
+    public async Task CreateAdminAsync(string username, string passwordHash)
+    {
+        var document = new BsonDocument
+        {
+            {"username", username},
+            {"passwordHash", passwordHash}
+        };
+        await _database.GetCollection<BsonDocument>("admin").InsertOneAsync(document);
     }
 }

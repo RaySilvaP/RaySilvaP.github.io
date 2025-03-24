@@ -2,6 +2,7 @@ using Backend.Data;
 using Backend.Installers;
 using Backend.Models;
 using Backend.Services;
+using Utils;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -18,6 +19,7 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
+    app.CreateAdmin();
     app.UseSwagger();
     app.UseSwaggerUI();
 }
@@ -59,8 +61,16 @@ app.MapPost("/projects", async (IRepository repository, IImageService service, H
 
 app.MapDelete("/projects/{id}", async (IRepository repository, string id) =>
 {
-    await repository.DeleteProjectAsync(id);
-    return Results.Ok();
+    try
+    {
+        await repository.DeleteProjectAsync(id);
+        return Results.Ok();
+    }
+    catch (Exception e)
+    {
+        Console.WriteLine(e);
+        return Results.NotFound("Couldn't delete the project.");
+    }
 })
 .RequireAuthorization();
 
@@ -74,7 +84,6 @@ app.MapPut("/projects", async (IRepository repository, PutProjectDto body) =>
 app.MapGet("/projects/{id}/images", async (IRepository repository, string id) =>
 {
     var images = await repository.GetProjectImagesAsync(id);
-    
     return Results.Ok(images);
 });
 
@@ -105,7 +114,7 @@ app.MapPost("projects/thumbnails", async (IRepository repository, IImageService 
 })
 .RequireAuthorization();
 
-app.MapDelete("project/{projectId}images/{imageId}", async (IRepository repository,string projectId, string imageId) =>
+app.MapDelete("project/{projectId}images/{imageId}", async (IRepository repository, string projectId, string imageId) =>
 {
     await repository.DeleteProjectImageAsync(projectId, imageId);
     return Results.Ok();
@@ -127,7 +136,7 @@ Login login) =>
     return Results.Forbid();
 });
 
-var methods = new [] {"HEAD"};
+var methods = new[] { "HEAD" };
 
 app.MapMethods("/auth", methods, () => Results.Ok())
 .RequireAuthorization();

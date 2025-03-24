@@ -30,4 +30,6 @@ public interface IRepository
     Task DeleteProjectImagesAsync(string projectId);
 
     Task<Admin?> GetAdminAsync(string username);
+
+    Task CreateAdminAsync(string username, string passwordHash);
 }
