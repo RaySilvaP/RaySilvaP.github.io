@@ -2,7 +2,6 @@ using System.Buffers.Text;
 using SixLabors.ImageSharp.Formats.Jpeg;
 using SixLabors.ImageSharp.Processing;
 using SixLabors.ImageSharp;
-using MongoDB.Driver;
 
 namespace Backend.Services;
 

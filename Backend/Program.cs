@@ -2,7 +2,8 @@ using Backend.Data;
 using Backend.Installers;
 using Backend.Models;
 using Backend.Services;
-using Utils;
+using Backend.Utils;
+using Shared.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -19,7 +20,7 @@ var app = builder.Build();
 // Configure the HTTP request pipeline.
 if (app.Environment.IsDevelopment())
 {
-    app.CreateAdmin();
+    await app.CreateAdmin();
     app.UseSwagger();
     app.UseSwaggerUI();
 }
@@ -74,7 +75,7 @@ app.MapDelete("/projects/{id}", async (IRepository repository, string id) =>
 })
 .RequireAuthorization();
 
-app.MapPut("/projects", async (IRepository repository, PutProjectDto body) =>
+app.MapPut("/projects", async (IRepository repository, UpdateProjectDto body) =>
 {
     await repository.UpdateProjectAsync(body);
     return Results.Ok();
@@ -84,35 +85,52 @@ app.MapPut("/projects", async (IRepository repository, PutProjectDto body) =>
 app.MapGet("/projects/{id}/images", async (IRepository repository, string id) =>
 {
     var images = await repository.GetProjectImagesAsync(id);
+    foreach (var image in images)
+    {
+        Console.WriteLine(image.Id);
+    }
     return Results.Ok(images);
 });
 
-app.MapPost("/projects/images", async (IRepository repository, IImageService service, PostImageDto body) =>
+app.MapPost("/projects/{id}/images", async (IRepository repository, IImageService service, string id, IFormFile file) =>
 {
-    var isValid = await service.IsImageValidAsync(body.Image);
-    if (!isValid)
+    var image = await ImageMapper.IFormFileToImageAsync(file);
+    Console.WriteLine(file.Length);
+    try
+    {
+        if (image.Format != "image/gif" || image.Size < 1024 * 1000)
+            await service.CompressAsync(image);
+
+        await repository.PushImageToProjectAsync(id, image);
+        return Results.Ok();
+    }
+    catch (Exception e)
+    {
+        Console.WriteLine(e);
         return Results.BadRequest("Image invalid.");
-
-    if (body.Image.Format != "image/gif")
-        await service.CompressAsync(body.Image);
-
-    await repository.PushImageToProjectAsync(body.ProjectId, body.Image);
-    return Results.Ok();
+    }
 })
-.RequireAuthorization();
+.RequireAuthorization()
+.DisableAntiforgery();
 
-app.MapPost("projects/thumbnails", async (IRepository repository, IImageService service, PostImageDto body) =>
+app.MapPost("projects/{id}/thumbnail", async (IRepository repository, IImageService service, string id, IFormFile file) =>
 {
-    var isValid = await service.IsImageValidAsync(body.Image);
-    if (!isValid)
+    var image = await ImageMapper.IFormFileToImageAsync(file);
+    try
+    {
+        var thumbnail = await service.CreateThumbnailAsync(image);
+
+        await repository.SetProjectThumbnailAsync(id, thumbnail);
+        return Results.Ok();
+    }
+    catch (Exception e)
+    {
+        Console.WriteLine(e);
         return Results.BadRequest("Image invalid.");
-
-    var thumbnail = await service.CreateThumbnailAsync(body.Image);
-
-    await repository.SetProjectThumbnailAsync(body.ProjectId, thumbnail);
-    return Results.Ok();
+    }
 })
-.RequireAuthorization();
+.RequireAuthorization()
+.DisableAntiforgery();
 
 app.MapDelete("project/{projectId}images/{imageId}", async (IRepository repository, string projectId, string imageId) =>
 {

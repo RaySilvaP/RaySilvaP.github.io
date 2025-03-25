@@ -15,7 +15,7 @@ public interface IRepository
 
     Task DeleteProjectAsync(string id);
 
-    Task UpdateProjectAsync(PutProjectDto project);
+    Task UpdateProjectAsync(UpdateProjectDto project);
 
     Task<Image?> GetProjectThumbnailAsync(string projectId);
 
