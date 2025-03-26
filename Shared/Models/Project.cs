@@ -8,5 +8,5 @@ public class Project
     public string Description { get; set; } = string.Empty;
     public string Github { get; set; } = string.Empty;
     public Image? Thumbnail { get; set; }
-    public List<Image>? Images { get; set; }
+    public List<Image> Images { get; set; } = [];
 }
