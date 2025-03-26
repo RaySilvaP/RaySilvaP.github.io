@@ -7,11 +7,11 @@ public interface IRepository
 {
     Task<IEnumerable<Project>> GetProjectsAsync(int skip, int take);
 
-    Task<Project?> GetProjectAsync(string id);
+    Task<Project> GetProjectAsync(string id);
 
     Task<int> GetProjectsCountAsync();
 
-    Task<Project?> InsertProjectAsync(PostProjectDto project);
+    Task<Project> InsertProjectAsync(PostProjectDto project);
 
     Task DeleteProjectAsync(string id);
 
@@ -27,9 +27,7 @@ public interface IRepository
 
     Task DeleteProjectImageAsync(string projectId, string imageId);
 
-    Task DeleteProjectImagesAsync(string projectId);
+    Task<Admin> GetAdminAsync(string username);
 
-    Task<Admin?> GetAdminAsync(string username);
-
-    Task CreateAdminAsync(string username, string passwordHash);
+    Task CreateAdminAsync(Admin admin);
 }

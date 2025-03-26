@@ -95,7 +95,6 @@ app.MapGet("/projects/{id}/images", async (IRepository repository, string id) =>
 app.MapPost("/projects/{id}/images", async (IRepository repository, IImageService service, string id, IFormFile file) =>
 {
     var image = await ImageMapper.IFormFileToImageAsync(file);
-    Console.WriteLine(file.Length);
     try
     {
         if (image.Format != "image/gif" || image.Size < 1024 * 1000)

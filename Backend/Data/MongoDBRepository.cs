@@ -1,3 +1,4 @@
+using Backend.Exceptions;
 using Backend.Models;
 using MongoDB.Bson;
 using MongoDB.Driver;
@@ -10,8 +11,8 @@ public sealed class MongoDBRepository(IMongoClient client) : IRepository
 {
     private readonly IMongoDatabase _database = client.GetDatabase("portifolio");
     private IMongoCollection<Project> Projects => _database.GetCollection<Project>("projects");
-    private IMongoCollection<BsonDocument> BsonProjects => _database.GetCollection<BsonDocument>("projects");
     private IMongoCollection<Image> Images => _database.GetCollection<Image>("images");
+    private IMongoCollection<Admin> Admins => _database.GetCollection<Admin>("admins");
 
     public async Task<IEnumerable<Project>> GetProjectsAsync(int skip, int take)
     {
@@ -24,10 +25,14 @@ public sealed class MongoDBRepository(IMongoClient client) : IRepository
         return projects;
     }
 
-    public async Task<Project?> GetProjectAsync(string id)
+    public async Task<Project> GetProjectAsync(string id)
     {
         var filter = Builders<Project>.Filter.Eq(p => p.Id, id);
-        return await Projects.Find(filter).FirstOrDefaultAsync();
+        var project = await Projects.Find(filter).FirstOrDefaultAsync();
+        if (project == null)
+            throw new ProjectNotFoundException($"Project ${id} not found");
+
+        return project;
     }
 
     public async Task<int> GetProjectsCountAsync()
@@ -37,7 +42,7 @@ public sealed class MongoDBRepository(IMongoClient client) : IRepository
         return (int)count;
     }
 
-    public async Task<Project?> InsertProjectAsync(PostProjectDto dto)
+    public async Task<Project> InsertProjectAsync(PostProjectDto dto)
     {
         var project = new Project
         {
@@ -54,16 +59,16 @@ public sealed class MongoDBRepository(IMongoClient client) : IRepository
 
     public async Task DeleteProjectAsync(string id)
     {
-        var filter = Builders<BsonDocument>.Filter.Eq("_id", new ObjectId(id));
-        var project = await BsonProjects.Find(filter).FirstAsync();
+        var project = await GetProjectAsync(id);
 
-        if (project.TryGetElement("thumbnailId", out BsonElement thumbnailId))
-            await DeleteImageAsync(thumbnailId.Value.AsString);
+        if (project.Thumbnail != null)
+            await DeleteImageAsync(project.Thumbnail.Id);
 
-        if (project.TryGetElement("imageIds", out BsonElement imageIds))
-            await DeleteImagesAsync(imageIds.Value.AsBsonArray.Values.Select(v => v.AsString));
+        if (project.Images.Count > 0)
+            await DeleteImagesAsync(project.Images.Select(i => i.Id));
 
-        await BsonProjects.DeleteOneAsync(filter);
+        var filter = Builders<Project>.Filter.Eq(p => p.Id, id);
+        await Projects.DeleteOneAsync(filter);
     }
 
     public async Task UpdateProjectAsync(UpdateProjectDto project)
@@ -83,24 +88,23 @@ public sealed class MongoDBRepository(IMongoClient client) : IRepository
 
     public async Task<Image?> GetProjectThumbnailAsync(string projectId)
     {
-        var projectFilter = Builders<Project>.Filter.Eq(p => p.Id, projectId);
-        var project = await Projects.Find(projectFilter).FirstOrDefaultAsync();
-        if(project == null)
-            throw new Exception("Project not found");
-        else if(project.Thumbnail == null)
+        var project = await GetProjectAsync(projectId);
+        if (project.Thumbnail == null)
             return null;
 
         var imageFilter = Builders<Image>.Filter.Eq(i => i.Id, project.Thumbnail.Id);
         var thumbnail = await Images.Find(imageFilter).FirstOrDefaultAsync();
+        if (thumbnail == null)
+            throw new ImageNotFoundException($"Thumbnail ${project.Thumbnail.Id} not found.");
+
         return thumbnail;
     }
 
     public async Task<List<Image>> GetProjectImagesAsync(string projectId)
     {
-        var projectFilter = Builders<BsonDocument>.Filter.Eq("_id", new ObjectId(projectId));
-        var project = await BsonProjects.Find(projectFilter).FirstAsync();
+        var project = await GetProjectAsync(projectId);
 
-        var imageIds = project.GetElement("imageIds").Value.AsBsonArray.Values.Select(v => v.ToString());
+        var imageIds = project.Images.Select(i => i.Id);
         var imageFilter = Builders<Image>.Filter.In(i => i.Id, imageIds);
 
         return await Images.Find(imageFilter).ToListAsync();
@@ -108,13 +112,12 @@ public sealed class MongoDBRepository(IMongoClient client) : IRepository
 
     public async Task PushImageToProjectAsync(string projectId, Image image)
     {
-        var imageId = ObjectId.GenerateNewId();
-        image.Id = imageId.ToString();
+        image.Id = ObjectId.GenerateNewId().ToString();
         await Images.InsertOneAsync(image);
 
-        var filter = Builders<BsonDocument>.Filter.Eq("_id", new ObjectId(projectId));
-        var update = Builders<BsonDocument>.Update.Push("imageIds", imageId);
-        await BsonProjects.UpdateOneAsync(filter, update);
+        var filter = Builders<Project>.Filter.Eq(p => p.Id, projectId);
+        var update = Builders<Project>.Update.Push(p => p.Images, image);
+        await Projects.UpdateOneAsync(filter, update);
     }
 
     public async Task SetProjectThumbnailAsync(string projectId, Image thumbnail)
@@ -122,6 +125,7 @@ public sealed class MongoDBRepository(IMongoClient client) : IRepository
         thumbnail.Id = ObjectId.GenerateNewId().ToString();
         await Images.InsertOneAsync(thumbnail);
         await DeleteThumbnailAsync(projectId);
+
         var filter = Builders<Project>.Filter.Eq(p => p.Id, projectId);
         var update = Builders<Project>.Update.Set(p => p.Thumbnail, thumbnail);
         await Projects.UpdateOneAsync(filter, update);
@@ -130,41 +134,27 @@ public sealed class MongoDBRepository(IMongoClient client) : IRepository
 
     public async Task DeleteProjectImageAsync(string projectId, string imageId)
     {
-        var filter = Builders<BsonDocument>.Filter.Eq("_id", new ObjectId(projectId));
-        var project = await BsonProjects.Find(filter).FirstAsync();
-        var imageIds = project.GetElement("imageIds").Value.AsBsonArray.Values
-        .Select(v => v.AsString)
-        .ToList()
-        .Remove(imageId);
-        var update = Builders<BsonDocument>.Update.Set("imageIds", imageIds);
-        await BsonProjects.UpdateOneAsync(filter, update);
+        var project = await GetProjectAsync(projectId);
+        var image = project.Images.Find(i => i.Id == imageId);
+        if (image == null)
+            throw new ImageNotFoundException($"Image ${imageId} not found in project gallery");
+
+        project.Images.Remove(image);
+        var update = Builders<Project>.Update.Set(p => p.Images, project.Images);
+        var filter = Builders<Project>.Filter.Eq(p => p.Id, projectId);
+        await Projects.UpdateOneAsync(filter, update);
         await DeleteImageAsync(imageId);
     }
 
-    public async Task DeleteProjectImagesAsync(string projectId)
+    public async Task<Admin> GetAdminAsync(string username)
     {
-        var filter = Builders<BsonDocument>.Filter.Eq("_id", new ObjectId(projectId));
-        var project = await BsonProjects.Find(filter).FirstAsync();
-        var imageIds = project.GetElement("imageIds").Value.AsBsonArray.Values.Select(v => v.AsString);
-        await DeleteImagesAsync(imageIds);
-    }
+        var filter = Builders<Admin>.Filter.Eq(a => a.Username, username);
+        var admin = await Admins.Find(filter).FirstOrDefaultAsync();
 
-    public async Task<Admin?> GetAdminAsync(string username)
-    {
-        var filter = Builders<BsonDocument>.Filter.Eq("username", username);
-        var result = await _database
-            .GetCollection<BsonDocument>("admin")
-            .Find(filter)
-            .FirstOrDefaultAsync();
-
-        if (result == null)
-            return null;
-        else
-            return new Admin
-            {
-                Username = result.GetElement("username").Value.ToString()!,
-                PasswordHash = result.GetElement("passwordHash").Value.ToString()!
-            };
+        if (admin == null)
+            throw new Exception($"Admin not found");
+        
+        return admin;
     }
 
     private async Task DeleteThumbnailAsync(string projectId)
@@ -188,13 +178,8 @@ public sealed class MongoDBRepository(IMongoClient client) : IRepository
         await Images.DeleteManyAsync(filter);
     }
 
-    public async Task CreateAdminAsync(string username, string passwordHash)
+    public async Task CreateAdminAsync(Admin admin)
     {
-        var document = new BsonDocument
-        {
-            {"username", username},
-            {"passwordHash", passwordHash}
-        };
-        await _database.GetCollection<BsonDocument>("admin").InsertOneAsync(document);
+        await Admins.InsertOneAsync(admin);
     }
 }

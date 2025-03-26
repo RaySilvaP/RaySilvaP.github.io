@@ -1,4 +1,5 @@
 using Backend.Data;
+using Backend.Models;
 using Backend.Serializers.Mongo;
 using MongoDB.Bson.Serialization;
 using MongoDB.Driver;
@@ -23,6 +24,7 @@ public static class MongoDBInstaller
     {
         var customIdSerializer = new CustomIdSerializer();
         var imageSerializer = new ImageSerializer();
+        var imagesSerializer = new ImagesSerializer();
 
         BsonClassMap.RegisterClassMap<Project>(classMap =>
         {
@@ -35,12 +37,19 @@ public static class MongoDBInstaller
             classMap.MapMember(p => p.Github).SetElementName("github");
             classMap.MapMember(p => p.Description).SetElementName("description");
             classMap.MapMember(p => p.Thumbnail).SetElementName("thumbnailId").SetSerializer(imageSerializer);
+            classMap.MapMember(p => p.Images).SetElementName("imageIds").SetSerializer(imagesSerializer);
         });
 
         BsonClassMap.RegisterClassMap<Image>(classMap =>
         {
             classMap.AutoMap();
             classMap.MapIdMember(p => p.Id).SetSerializer(customIdSerializer);
+        });
+
+        BsonClassMap.RegisterClassMap<Admin>(classMap =>
+        {
+            classMap.MapMember(a => a.Username).SetElementName("username");
+            classMap.MapMember(a => a.PasswordHash).SetElementName("passwordHash");
         });
     }
 }
