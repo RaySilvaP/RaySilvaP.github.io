@@ -30,7 +30,7 @@ public sealed class MongoDBRepository(IMongoClient client) : IRepository
         var filter = Builders<Project>.Filter.Eq(p => p.Id, id);
         var project = await Projects.Find(filter).FirstOrDefaultAsync();
         if (project == null)
-            throw new ProjectNotFoundException($"Project ${id} not found");
+            throw new ProjectNotFoundException($"Project {id} not found.");
 
         return project;
     }
@@ -83,7 +83,9 @@ public sealed class MongoDBRepository(IMongoClient client) : IRepository
         .Set(p => p.Github, project.Github);
 
 
-        await Projects.UpdateOneAsync(filter, update);
+        var result = await Projects.UpdateOneAsync(filter, update);
+        if(result.ModifiedCount < 1)
+            throw new ProjectNotFoundException($"Project {project.Id} not found.");
     }
 
     public async Task<Image?> GetProjectThumbnailAsync(string projectId)
@@ -95,7 +97,7 @@ public sealed class MongoDBRepository(IMongoClient client) : IRepository
         var imageFilter = Builders<Image>.Filter.Eq(i => i.Id, project.Thumbnail.Id);
         var thumbnail = await Images.Find(imageFilter).FirstOrDefaultAsync();
         if (thumbnail == null)
-            throw new ImageNotFoundException($"Thumbnail ${project.Thumbnail.Id} not found.");
+            throw new ImageNotFoundException($"Thumbnail {project.Thumbnail.Id} not found.");
 
         return thumbnail;
     }
@@ -117,7 +119,9 @@ public sealed class MongoDBRepository(IMongoClient client) : IRepository
 
         var filter = Builders<Project>.Filter.Eq(p => p.Id, projectId);
         var update = Builders<Project>.Update.Push(p => p.Images, image);
-        await Projects.UpdateOneAsync(filter, update);
+        var result = await Projects.UpdateOneAsync(filter, update);
+        if(result.ModifiedCount < 1)
+            throw new ProjectNotFoundException($"Project {projectId} not found.");
     }
 
     public async Task SetProjectThumbnailAsync(string projectId, Image thumbnail)
@@ -128,7 +132,9 @@ public sealed class MongoDBRepository(IMongoClient client) : IRepository
 
         var filter = Builders<Project>.Filter.Eq(p => p.Id, projectId);
         var update = Builders<Project>.Update.Set(p => p.Thumbnail, thumbnail);
-        await Projects.UpdateOneAsync(filter, update);
+        var result = await Projects.UpdateOneAsync(filter, update);
+        if(result.ModifiedCount < 1)
+            throw new ProjectNotFoundException($"Project {projectId} not found.");
 
     }
 
@@ -137,7 +143,7 @@ public sealed class MongoDBRepository(IMongoClient client) : IRepository
         var project = await GetProjectAsync(projectId);
         var image = project.Images.Find(i => i.Id == imageId);
         if (image == null)
-            throw new ImageNotFoundException($"Image ${imageId} not found in project gallery");
+            throw new ImageNotFoundException($"Image {imageId} not found in project gallery.");
 
         project.Images.Remove(image);
         var update = Builders<Project>.Update.Set(p => p.Images, project.Images);
@@ -152,9 +158,23 @@ public sealed class MongoDBRepository(IMongoClient client) : IRepository
         var admin = await Admins.Find(filter).FirstOrDefaultAsync();
 
         if (admin == null)
-            throw new Exception($"Admin not found");
+            throw new AdminNotFoundException();
         
         return admin;
+    }
+
+    public async Task CreateAdminAsync(Admin admin)
+    {
+        await Admins.InsertOneAsync(admin);
+    }
+
+    public async Task UpdateAdminPassword(Admin admin)
+    {
+        var filter = Builders<Admin>.Filter.Eq(a => a.Username, admin.Username);
+        var update = Builders<Admin>.Update.Set(a => a.PasswordHash, admin.PasswordHash);
+        var result = await Admins.UpdateOneAsync(filter, update);
+        if(result.ModifiedCount < 1)
+            throw new AdminNotFoundException();
     }
 
     private async Task DeleteThumbnailAsync(string projectId)
@@ -176,10 +196,5 @@ public sealed class MongoDBRepository(IMongoClient client) : IRepository
     {
         var filter = Builders<Image>.Filter.In(i => i.Id, imageIds);
         await Images.DeleteManyAsync(filter);
-    }
-
-    public async Task CreateAdminAsync(Admin admin)
-    {
-        await Admins.InsertOneAsync(admin);
     }
 }

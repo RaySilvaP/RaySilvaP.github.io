@@ -30,4 +30,6 @@ public interface IRepository
     Task<Admin> GetAdminAsync(string username);
 
     Task CreateAdminAsync(Admin admin);
+
+    Task UpdateAdminPassword(Admin admin);
 }

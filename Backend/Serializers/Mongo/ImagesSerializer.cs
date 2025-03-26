@@ -11,28 +11,29 @@ public class ImagesSerializer : IBsonArraySerializer
 
     object IBsonSerializer.Deserialize(BsonDeserializationContext context, BsonDeserializationArgs args)
     {
-        if (context.Reader.CurrentBsonType == BsonType.Array)
-        {
-            var images = new List<Image>();
-            context.Reader.ReadStartArray();
-            while (context.Reader.ReadBsonType() != BsonType.EndOfDocument)
-            {
-                images.Add(new Image { Id = context.Reader.ReadObjectId().ToString() });
-            }
-            context.Reader.ReadEndArray();
-            return images;
-        }
+        var images = new List<Image>();
 
-        context.Reader.ReadNull();
-        return new List<Image>();
+        context.Reader.ReadStartArray();
+        while (context.Reader.ReadBsonType() != BsonType.EndOfDocument)
+        {
+            images.Add(new Image { Id = context.Reader.ReadObjectId().ToString() });
+        }
+        context.Reader.ReadEndArray();
+
+        return images;
     }
 
     public void Serialize(BsonSerializationContext context, BsonSerializationArgs args, object value)
     {
         if (value is Image image && ObjectId.TryParse(image.Id, out var id))
+        {
             context.Writer.WriteObjectId(id);
+        }
         else
-            context.Writer.WriteNull();
+        {
+            context.Writer.WriteStartArray();
+            context.Writer.WriteEndArray();
+        }
     }
 
     public bool TryGetItemSerializationInfo(out BsonSerializationInfo serializationInfo)
