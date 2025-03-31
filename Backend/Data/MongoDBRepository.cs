@@ -14,7 +14,7 @@ public sealed class MongoDBRepository(IMongoClient client) : IRepository
     private IMongoCollection<Image> Images => _database.GetCollection<Image>("images");
     private IMongoCollection<Admin> Admins => _database.GetCollection<Admin>("admins");
 
-    public async Task<IEnumerable<Project>> GetProjectsAsync(int skip, int take)
+    public async Task<List<Project>> GetProjectsAsync(int skip, int take)
     {
         var projects = await Projects
         .AsQueryable()
@@ -110,6 +110,16 @@ public sealed class MongoDBRepository(IMongoClient client) : IRepository
         var imageFilter = Builders<Image>.Filter.In(i => i.Id, imageIds);
 
         return await Images.Find(imageFilter).ToListAsync();
+    }
+
+    public async Task<Image> GetImageAsync(string id)
+    {
+        var filter = Builders<Image>.Filter.Eq(i => i.Id, id);
+        var image = await Images.Find(filter).FirstOrDefaultAsync();
+        if(image == null)
+            throw new ImageNotFoundException();
+
+        return image;
     }
 
     public async Task PushImageToProjectAsync(string projectId, Image image)

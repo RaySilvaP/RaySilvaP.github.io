@@ -10,8 +10,10 @@ public static class Startup
     {
         var username = app.Configuration["Admin:Username"];
         var password = app.Configuration["Admin:Password"];
-        username ??= "admin";
-        password ??= "admin";
+        username ??= Environment.GetEnvironmentVariable("ADMIN_USERNAME");
+        password ??= Environment.GetEnvironmentVariable("ADMIN_PASSWORD");
+        if(username == null || password == null)
+            throw new Exception("Admin username or password not found.");
 
         var scope = app.Services.CreateScope();
         var repository = scope.ServiceProvider.GetRequiredService<IRepository>();

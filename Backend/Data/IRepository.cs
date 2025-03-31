@@ -5,7 +5,7 @@ namespace Backend.Data;
 
 public interface IRepository
 {
-    Task<IEnumerable<Project>> GetProjectsAsync(int skip, int take);
+    Task<List<Project>> GetProjectsAsync(int skip, int take);
 
     Task<Project> GetProjectAsync(string id);
 
@@ -20,6 +20,8 @@ public interface IRepository
     Task<Image?> GetProjectThumbnailAsync(string projectId);
 
     Task<List<Image>> GetProjectImagesAsync(string projectId); 
+
+    Task<Image> GetImageAsync(string id);
 
     Task PushImageToProjectAsync(string projectId, Image image);
 

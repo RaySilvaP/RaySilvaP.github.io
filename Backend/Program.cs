@@ -4,7 +4,6 @@ using Backend.Installers;
 using Backend.Models;
 using Backend.Services;
 using Backend.Utils;
-using Shared.Models;
 
 var builder = WebApplication.CreateBuilder(args);
 
@@ -12,8 +11,10 @@ builder.Services.AddEndpointsApiExplorer();
 builder.Services.AddSwaggerGen();
 builder.Services.AddMongoDb(builder.Configuration);
 builder.Services.AddJwtAuthorization(builder.Configuration);
+builder.Services.AddMemoryCache();
 builder.Services.AddTransient<IImageService, ImageSharpService>();
 builder.Services.AddTransient<CredentialsService>();
+builder.Services.AddTransient<ICacheService, CacheService>();
 builder.Services.AddAntiforgery();
 
 var app = builder.Build();
@@ -32,23 +33,34 @@ app.UseAuthentication();
 app.UseAuthorization();
 app.UseAntiforgery();
 
-app.MapGet("/projects", async (IRepository repository, int page = 1, int pageSize = 10) =>
+app.MapGet("/projects", async (IRepository repository, ICacheService cache, int page = 1, int pageSize = 10) =>
 {
     page = page < 1 ? 1 : page;
     pageSize = pageSize < 1 ? 1 : pageSize;
-    var projects = await repository.GetProjectsAsync((page - 1) * pageSize, pageSize);
+    var skip = (page - 1) * pageSize;
 
+    var projects = await cache.GetProjectsAsync($"{skip}-{pageSize}");
+    if (projects == null)
+    {
+        projects = await repository.GetProjectsAsync(skip, pageSize);
+        await cache.SetProjectsAsync($"{skip}-{pageSize}", projects);
+    }
     var projectsCount = await repository.GetProjectsCountAsync();
     var totalPages = projectsCount < pageSize ? 1 : (int)MathF.Ceiling(projectsCount / (float)pageSize);
 
     return Results.Ok(new { totalPages, projects });
 });
 
-app.MapGet("/projects/{id}", async (string id, IRepository repository) =>
+app.MapGet("/projects/{id}", async (IRepository repository, ICacheService cache, string id) =>
 {
     try
     {
-        var project = await repository.GetProjectAsync(id);
+        var project = await cache.GetProjectAsync(id);
+        if (project == null)
+        {
+            project = await repository.GetProjectAsync(id);
+            await cache.SetProjectAsync(project);
+        }
         return Results.Ok(project);
     }
     catch (ProjectNotFoundException e)
@@ -102,6 +114,7 @@ app.MapPut("/projects", async (IRepository repository, UpdateProjectDto body) =>
     try
     {
         await repository.UpdateProjectAsync(body);
+
         return Results.Ok();
     }
     catch (ProjectNotFoundException e)
@@ -116,11 +129,39 @@ app.MapPut("/projects", async (IRepository repository, UpdateProjectDto body) =>
 })
 .RequireAuthorization();
 
-app.MapGet("/projects/{id}/images", async (IRepository repository, string id) =>
+app.MapGet("/images/{id}", async (IRepository repository, ICacheService cache, string id) =>
 {
     try
     {
-        var images = await repository.GetProjectImagesAsync(id);
+        var image = await cache.GetImageAsync(id);
+        if (image == null)
+        {
+            image = await repository.GetImageAsync(id);
+            await cache.SetImageAsync(image);
+        }
+        return Results.Ok(image);
+    }
+    catch (ImageNotFoundException e)
+    {
+        return Results.NotFound(e.Message);
+    }
+    catch (Exception e)
+    {
+        Console.WriteLine(e);
+        return Results.StatusCode(500);
+    }
+});
+
+app.MapGet("/projects/{id}/images", async (IRepository repository, ICacheService cache, string id) =>
+{
+    try
+    {
+        var images = await cache.GetProjectImagesAsync(id);
+        if (images == null)
+        {
+            images = await repository.GetProjectImagesAsync(id);
+            await cache.SetProjectImagesAsync(id, images);
+        }
         return Results.Ok(images);
     }
     catch (ProjectNotFoundException e)
@@ -136,11 +177,11 @@ app.MapGet("/projects/{id}/images", async (IRepository repository, string id) =>
 
 app.MapPost("/projects/{id}/images", async (IRepository repository, IImageService service, string id, IFormFile file) =>
 {
-    const long MINIMUM_FILE_SIZE_KB = 1024 * 1000;
+    const long MINIMUM_FILE_SIZE_B = 1024 * 1000;
     var image = await ImageMapper.IFormFileToImageAsync(file);
     try
     {
-        if (image.Format != "image/gif" || image.Size > MINIMUM_FILE_SIZE_KB)
+        if (image.Format != "image/gif" || image.Size > MINIMUM_FILE_SIZE_B)
             await service.CompressAsync(image);
 
         await repository.PushImageToProjectAsync(id, image);
@@ -159,11 +200,17 @@ app.MapPost("/projects/{id}/images", async (IRepository repository, IImageServic
 .RequireAuthorization()
 .DisableAntiforgery();
 
-app.MapGet("projects/{id}/thumbnail", async (IRepository repository, string id) =>
+app.MapGet("projects/{id}/thumbnail", async (IRepository repository, ICacheService cache, string id) =>
 {
     try
     {
-        var thumbnail = await repository.GetProjectThumbnailAsync(id);
+        var thumbnail = await cache.GetProjectThumbnailAsync(id);
+        if (thumbnail == null)
+        {
+            thumbnail = await repository.GetProjectThumbnailAsync(id);
+            if (thumbnail != null)
+                await cache.SetProjectThumbnailAsync(id, thumbnail);
+        }
         return Results.Ok(thumbnail);
     }
     catch (ProjectNotFoundException e)
@@ -209,6 +256,7 @@ app.MapDelete("project/{projectId}images/{imageId}", async (IRepository reposito
     try
     {
         await repository.DeleteProjectImageAsync(projectId, imageId);
+
         return Results.Ok();
     }
     catch (ProjectNotFoundException e)
@@ -261,5 +309,10 @@ app.MapMethods("/auth", methods, () => Results.Ok())
 .RequireAuthorization();
 
 app.MapMethods("/", methods, () => Results.Ok());
+
+app.MapMethods("/cache", methods, async (ICacheService cache) => 
+{
+    await cache.ClearCache();
+});
 
 app.Run();
