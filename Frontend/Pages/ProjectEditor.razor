@@ -37,7 +37,7 @@
 
 @code {
     private string _id = string.Empty;
-    private ProjectDto? _project;
+    private Project? _project;
     private string _spanMessage = "No Project...";
 
     private async Task GetProject()
@@ -49,18 +49,26 @@
 
     private async Task SaveProject()
     {
-        var isSuccess = await _httpService.PutProjectAsync(_project!);
-        if (isSuccess)
-            Console.WriteLine("Project saved.");
+        try
+        {
+            await _httpService.PutProjectAsync(_project!);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
     }
 
     private async Task DeleteProject()
     {
-        var isSuccess = await _httpService.DeleteProjectAsync(_project!.Id);
-        if (isSuccess)
+        try
         {
-            Console.WriteLine("Project deleted.");
+            await _httpService.DeleteProjectAsync(_project!.Id);
             _navigator.Refresh(true);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
         }
     }
 }

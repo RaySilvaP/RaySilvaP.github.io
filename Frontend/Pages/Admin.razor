@@ -1,4 +1,5 @@
 @using Frontend.Services
+@using Frontend.Exceptions
 @page "/admin"
 @inject NavigationManager _navigator
 @inject TokenService _tokenService
@@ -25,9 +26,16 @@
 
     protected override async Task OnInitializedAsync()
     {
-        var isSuccess = await _httpService.CheckAuthorizationAsync();
-        if (isSuccess)
-            _navigator.NavigateTo("/admin/dashboard");
+        try
+        {
+            var isSuccess = await _httpService.CheckAuthorizationAsync();
+            if (isSuccess)
+                _navigator.NavigateTo("/admin/dashboard");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
     }
 
     private async Task Login()
@@ -35,11 +43,18 @@
         if (_username == string.Empty || _password == string.Empty)
             return;
 
-        var isSuccess = await _httpService.LoginAsync(_username, _password);
-
-        if (isSuccess)
+        try
+        {
+            await _httpService.LoginAsync(_username, _password);
             _navigator.NavigateTo("/admin/dashboard");
-        else
+        }
+        catch (AuthenticationFailException)
+        {
             _wrongCredentials = true;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
     }
 }

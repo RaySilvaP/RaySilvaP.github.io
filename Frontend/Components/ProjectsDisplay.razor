@@ -13,7 +13,7 @@
             <li class="project-display-item" @onclick="() => NavigateToDetails(project.Id)">
                 <Card>
                     <div class="img-frame">
-                        <ImageAsync ImageId="@project.ThumbnailId" />
+                        <ImageAsync ImageId="@project.Thumbnail.Id" />
                     </div>
                     <CardBody>
                         <CardTitle class="important-text">@project.Name</CardTitle>
@@ -38,7 +38,7 @@ else
 
 @code {
     private const short PAGE_SIZE = 9;
-    private List<ProjectDto>? _projects;
+    private List<Project>? _projects;
     private int _totalPages = 0, _currentPageNumber = 1;
 
     protected override async Task OnInitializedAsync()

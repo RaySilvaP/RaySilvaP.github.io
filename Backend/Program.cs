@@ -289,12 +289,12 @@ Login login) =>
             var token = tokenService.GenerateToken();
             return Results.Ok(token);
         }
-        return Results.Ok("Wrong credentials.");
+        return Results.Unauthorized();
     }
     catch (AdminNotFoundException e)
     {
         Console.WriteLine(e);
-        return Results.Ok("Wrong credentials.");
+        return Results.Unauthorized();
     }
     catch (Exception e)
     {

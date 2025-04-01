@@ -1,8 +1,11 @@
 using System.Net.Http.Headers;
 using System.Net.Http.Json;
+using System.Net;
 using System.Text;
 using System.Text.Json;
+using Frontend.Exceptions;
 using Shared.Models;
+using BlazorBootstrap;
 
 namespace Frontend.Services;
 
@@ -13,240 +16,184 @@ public class HttpService(HttpClient client, TokenService tokenService, ILogger<H
     private readonly JsonSerializerOptions _serializerOptions = new() { PropertyNameCaseInsensitive = true };
     private readonly ILogger<HttpService> _logger = logger;
 
-    public async Task<bool> LoginAsync(string username, string password)
+    public async Task LoginAsync(string username, string password)
     {
         string json = JsonSerializer.Serialize(new { username, password });
         using StringContent content = new(json, Encoding.UTF8, "application/json");
-        var request = new HttpRequestMessage(HttpMethod.Post, "/login")
+        var request = new HttpRequestMessage(HttpMethod.Post, "/login");
+        request.Content = content;
+
+        var response = await _client.SendAsync(request);
+        if (response.IsSuccessStatusCode)
         {
-            Content = content
-        };
-        try
-        {
-            var response = await _client.SendAsync(request);
-            if (response.IsSuccessStatusCode)
-            {
-                var token = await response.Content.ReadAsStringAsync();
-                await _tokenService.StoreTokenAsync(token);
-                return true;
-            }
-            else
-                return false;
+            var token = await response.Content.ReadAsStringAsync();
+            await _tokenService.StoreTokenAsync(token);
+            _client.DefaultRequestHeaders.Authorization = new AuthenticationHeaderValue("Bearer", token);
         }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Something went wrong");
-            return false;
-        }
+        else if (response.StatusCode == HttpStatusCode.Unauthorized)
+            throw new AuthenticationFailException("Wrong credentials.");
+        else
+            throw new Exception("Something went wrong.");
     }
 
     public async Task<bool> CheckAuthorizationAsync()
     {
-        var token = await _tokenService.GetTokenAsync();
         var request = new HttpRequestMessage(HttpMethod.Head, "/auth");
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        try
-        {
-            var response = await _client.SendAsync(request);
-            return response.IsSuccessStatusCode;
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Something went wrong");
-            return false;
-        }
+        var response = await _client.SendAsync(request);
+        return response.IsSuccessStatusCode;
     }
 
-    public async Task<(int, List<ProjectDto>?)> GetProjectsAsync(int page = 1, int pageSize = 10)
+    public async Task<(int, List<Project>)> GetProjectsAsync(int page = 1, int pageSize = 10)
     {
-        try
-        {
-            var json = await _client.GetFromJsonAsync<JsonDocument>($"/projects?page={page}&pageSize={pageSize}");
-            if (json == null)
-                return (0, null);
+        var json = await _client.GetFromJsonAsync<JsonDocument>($"/projects?page={page}&pageSize={pageSize}");
+        if (json == null)
+            return (0, []);
 
-            var projects = json.RootElement.GetProperty("projects").Deserialize<List<ProjectDto>>(_serializerOptions);
-            var totalPages = json.RootElement.GetProperty("totalPages").GetInt32();
-            return (totalPages, projects);
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Something went wrong");
-            return (0, null);
-        }
+        var projects = json.RootElement.GetProperty("projects").Deserialize<List<Project>>(_serializerOptions);
+        var totalPages = json.RootElement.GetProperty("totalPages").GetInt32();
+        projects ??= [];
+
+        return (totalPages, projects);
     }
 
-    public async Task<ProjectDto?> GetProjectAsync(string id)
+    public async Task<Project> GetProjectAsync(string id)
     {
-        try
+        var request = new HttpRequestMessage(HttpMethod.Get, $"/projects/{id}");
+        var response = await _client.SendAsync(request);
+        if (response.IsSuccessStatusCode)
         {
-            return await _client.GetFromJsonAsync<ProjectDto>($"/projects/{id}");
+            var project = await response.Content.ReadFromJsonAsync<Project>();
+            if (project == null)
+                throw new Exception("Invalid response.");
+
+            return project;
         }
-        catch (Exception e)
+        else
         {
-            _logger.LogError(e, "Something went wrong");
-            return null;
+            var message = await response.Content.ReadAsStringAsync();
+            throw new Exception(message);
         }
+
     }
 
-    public async Task<bool> PostProjectAsync(ProjectDto project)
+    public async Task PostProjectAsync(Project project)
     {
         string json = JsonSerializer.Serialize(project);
-        var token = await _tokenService.GetTokenAsync();
         using StringContent content = new(json, Encoding.UTF8, "application/json");
-        var request = new HttpRequestMessage(HttpMethod.Post, "/projects")
+        var request = new HttpRequestMessage(HttpMethod.Post, "/projects");
+        request.Content = content;
+
+        var response = await _client.SendAsync(request);
+        if (response.IsSuccessStatusCode)
         {
-            Content = content
-        };
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        try
-        {
-            var response = await _client.SendAsync(request);
-            var body = await response.Content.ReadFromJsonAsync<ProjectDto>();
-            if (body == null)
-                return false;
-            else
-            {
-                project.Id = body.Id;
-                return true;
-            }
+            var resProject = await response.Content.ReadFromJsonAsync<Project>();
+            if (resProject == null)
+                throw new Exception("Invalid response.");
+
+            project.Id = resProject.Id;
         }
-        catch (Exception e)
+        else
         {
-            _logger.LogError(e, "Something went wrong");
-            return false;
+            var message = await response.Content.ReadAsStringAsync();
+            throw new Exception(message);
         }
     }
 
-    public async Task<bool> PutProjectAsync(ProjectDto project)
+    public async Task PutProjectAsync(Project project)
     {
-        var token = await _tokenService.GetTokenAsync();
         string json = JsonSerializer.Serialize(project);
         using StringContent content = new(json, Encoding.UTF8, "application/json");
-        var request = new HttpRequestMessage(HttpMethod.Put, "/projects")
+        var request = new HttpRequestMessage(HttpMethod.Put, "/projects");
+        request.Content = content;
+
+        var response = await _client.SendAsync(request);
+        if (!response.IsSuccessStatusCode)
         {
-            Content = content
-        };
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        try
-        {
-            var response = await _client.SendAsync(request);
-            return response.IsSuccessStatusCode;
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Something went wrong");
-            return false;
+            var message = await response.Content.ReadAsStringAsync();
+            throw new Exception(message);
         }
     }
 
-    public async Task<bool> PutProjectImageAsync(string id, Image image)
+    public async Task PutProjectImageAsync(string id, Image image)
     {
-        var token = await _tokenService.GetTokenAsync();
         string json = JsonSerializer.Serialize(new { id, image });
         using StringContent content = new(json, Encoding.UTF8, "application/json");
-        var request = new HttpRequestMessage(HttpMethod.Put, "/projects/images")
+        var request = new HttpRequestMessage(HttpMethod.Put, "/projects/images");
+        request.Content = content;
+
+        var response = await _client.SendAsync(request);
+        if (!response.IsSuccessStatusCode)
         {
-            Content = content
-        };
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        try
-        {
-            var response = await _client.SendAsync(request);
-            return response.IsSuccessStatusCode;
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Something went wrong");
-            return false;
+            var message = await response.Content.ReadAsStringAsync();
+            throw new Exception(message);
         }
     }
 
-    public async Task<bool> DeleteProjectAsync(string id)
+    public async Task DeleteProjectAsync(string id)
     {
-        var token = await _tokenService.GetTokenAsync();
         var request = new HttpRequestMessage(HttpMethod.Delete, $"/projects/{id}");
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        try
+
+        var response = await _client.SendAsync(request);
+        if (!response.IsSuccessStatusCode)
         {
-            var response = await _client.SendAsync(request);
-            return response.IsSuccessStatusCode;
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Something went wrong");
-            return false;
+            var message = await response.Content.ReadAsStringAsync();
+            throw new Exception(message);
         }
     }
 
-    public async Task<Image?> GetImageAsync(string id)
+    public async Task<Image> GetImageAsync(string id)
     {
-        try
+        var request = new HttpRequestMessage(HttpMethod.Get, $"/images/{id}");
+
+        var response = await _client.SendAsync(request);
+        if (response.IsSuccessStatusCode)
         {
-            var image = await _client.GetFromJsonAsync<Image>($"/images/{id}");
+            var image = await response.Content.ReadFromJsonAsync<Image>();
+            if (image == null)
+                throw new Exception("Invalid response.");
+
             return image;
         }
-        catch (Exception e)
+        else
         {
-            _logger.LogError(e, "Something went wrong");
-            return null;
+            var message = await response.Content.ReadAsStringAsync();
+            throw new Exception(message);
         }
     }
 
-    public async Task<bool> PostImageAsync(Image image, string projectId)
+    public async Task PostImageAsync(Image image, string projectId)
     {
         string json = JsonSerializer.Serialize(new { projectId, image });
-        var token = await _tokenService.GetTokenAsync();
         using StringContent content = new(json, Encoding.UTF8, "application/json");
-        var request = new HttpRequestMessage(HttpMethod.Post, "/images")
+        var request = new HttpRequestMessage(HttpMethod.Post, "/images");
+        request.Content = content;
+
+        var response = await _client.SendAsync(request);
+        if (!response.IsSuccessStatusCode)
         {
-            Content = content
-        };
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        try
-        {
-            var response = await _client.SendAsync(request);
-            return response.IsSuccessStatusCode;
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Something went wrong.");
-            return false;
+            var message = await response.Content.ReadAsStringAsync();
+            throw new Exception(message);
         }
     }
 
-    public async Task<bool> PostThumbnailAsync(Image image, string projectId)
+    public async Task PostThumbnailAsync(Image image, string projectId)
     {
         string json = JsonSerializer.Serialize(new { projectId, image });
-        var token = await _tokenService.GetTokenAsync();
         using StringContent content = new(json, Encoding.UTF8, "application/json");
-        var request = new HttpRequestMessage(HttpMethod.Post, "/images/thumbnails")
+        var request = new HttpRequestMessage(HttpMethod.Post, "/images/thumbnails");
+        request.Content = content;
+
+        var response = await _client.SendAsync(request);
+        if (!response.IsSuccessStatusCode)
         {
-            Content = content
-        };
-        request.Headers.Authorization = new AuthenticationHeaderValue("Bearer", token);
-        try
-        {
-            var response = await _client.SendAsync(request);
-            return response.IsSuccessStatusCode;
-        }
-        catch (Exception e)
-        {
-            _logger.LogError(e, "Something went wrong.");
-            return false;
+            var message = await response.Content.ReadAsStringAsync();
+            throw new Exception(message);
         }
     }
 
     public async Task CheckConnectionAsync()
     {
-        try
-        {
-            var request = new HttpRequestMessage(HttpMethod.Head, "/");
-            await _client.SendAsync(request);
-        }
-        catch (Exception e)
-        {
-            _logger.LogWarning(e, "Unable to connect to the server.");
-        }
+        var request = new HttpRequestMessage(HttpMethod.Head, "/");
+        await _client.SendAsync(request);
     }
 }

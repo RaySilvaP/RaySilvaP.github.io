@@ -8,10 +8,10 @@
 <div class="project">
     @if (_project != null)
     {
-        if (_project.ImageIds != null)
+        if (_project.Images != null || _project.Images.Count > 0)
         {
             <div id="display">
-                <ImagesCarousel ImageIds="@_project.ImageIds" />
+                <ImagesCarousel ImageIds="@_project.Images.Select(i => i.Id).ToList()" />
             </div>
         }
         <h1 id="title">@_project.Name</h1>
@@ -32,7 +32,7 @@
 @code {
     [Parameter]
     public string Id { get; set; } = null!;
-    private ProjectDto? _project;
+    private Project? _project;
     private ElementReference _description;
 
     protected override async Task OnParametersSetAsync()

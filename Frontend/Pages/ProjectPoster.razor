@@ -32,7 +32,7 @@
 
 @code
 {
-    private ProjectDto _project = new();
+    private Project _project = new();
     private Image _image = new();
     private ElementReference _imgsPreview;
     private InputFile? _inputFile;
@@ -43,13 +43,20 @@
         if (_project.Name == string.Empty || _project.Description == string.Empty)
             return;
 
-        var isSuccess = await _httpService.PostProjectAsync(_project);
-        if (isSuccess && _files != null)
+        try
         {
-            await PostImagesAsync(_files);
-            await PostThumbnailAsync(_files[0]);
+            await _httpService.PostProjectAsync(_project);
+            if (_files != null)
+            {
+                await PostImagesAsync(_files);
+                await PostThumbnailAsync(_files[0]);
+            }
         }
-    }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+}
 
     private async Task PostImagesAsync(IEnumerable<IBrowserFile> files)
     {

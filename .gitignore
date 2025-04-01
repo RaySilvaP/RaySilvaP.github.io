@@ -3,7 +3,8 @@
 ##
 ## Get latest from `dotnet new gitignore`
 
-*.Development.json
+# vscode debug
+.vscode
 
 # dotenv files
 .env
