@@ -6,7 +6,7 @@
     <div class="head">
         <img class="thumbnail" src="storageManager/borracharia-icon.svg">
         <div class="right-eye">
-            <h1 class="title">@_project.Name</h1>
+            <h1 class="title">@NAME</h1>
             <nav>
                 <div class="@SetActive(Tab.Article)" @onclick="() => SetTab(Tab.Article)">Article</div>
                 <div class="@SetActive(Tab.Gallery)" @onclick="() => SetTab(Tab.Gallery)">Gallery</div>
@@ -18,20 +18,12 @@
         <div class="article">
             <div id="text" class="commom-text">
                 <p id="description" @ref="_description"></p>
-                <div id="more-info">
-                    @if (_project.Github != string.Empty)
-                    {
-                        <h2>Checkout:</h2>
-                        <label for="github">Github:</label>
-                        <a id="github" href="@_project.Github">@_project.Github</a>
-                    }
-                </div>
             </div>
         </div>
     }
     else
     {
-        <div></div>
+        <Gallery Sources="@images"/>
     }
 </div>
 
@@ -41,9 +33,8 @@
     private const string UNACTIVE_TAB = "nav-item";
     private enum Tab { Article, Gallery };
     private Tab _tab = Tab.Article;
-    private Project _project = null!;
-    private List<string> _imagePaths = [];
     private ElementReference? _description;
+    private List<string> images = [];
 
     private string SetActive(Tab tab)
         => _tab == tab ? ACTIVE_TAB : UNACTIVE_TAB;
@@ -56,9 +47,11 @@
 
     protected override void OnInitialized()
     {
-        SetProject();
-        _imagePaths.Add("storageManager/th-3625161638.jpg");
-        _imagePaths.Add("storageManager/iphone-x-screenshot-544581703.jpg");
+        images.Add("storageManager/iphone-x-screenshot-544581703.jpg");
+        images.Add("storageManager/th-3625161638.jpg");
+        images.Add("storageManager/wallhaven-3lepy9_1366x768.png");
+        images.Add("storageManager/wallhaven-3lp2md_1920x1536.png");
+        images.Add("storageManager/wallhaven-d6y12l_1366x768.png");
     }
 
     protected override async Task OnAfterRenderAsync(bool firstRender)
@@ -67,18 +60,11 @@
             await _jS.InvokeVoidAsync("initializeCarousel");
 
 
-        if (_project != null && _description != null)
-            await _jS.InvokeVoidAsync("setInnerHtml", _description, _project.Description);
+        if (_description != null)
+            await _jS.InvokeVoidAsync("setInnerHtml", _description, DESCRIPTION);
     }
 
-    private void SetProject()
-    {
-        _project = new()
-            {
-                Name = "Storage Manager",
-                Description = DESCRIPTION
-            };
-    }
+    private const string NAME = "Storage Manager";
 
     private const string DESCRIPTION = @"
 <h2 class=""important-text"">Introduction</h2>
@@ -87,6 +73,10 @@
 storage.
 They wanted software that would be easy for both themselves and their employees to access and use, so I suggested a
 mobile app.</p>
+
+<div class=""article-image-frame"">
+    <img src=""storageManager/iphone-x-screenshot-544581703.jpg""/>
+</div>
 
 <h2 class=""important-text"">Objective</h2>
 
@@ -106,6 +96,10 @@ locally on the device, eliminating the need for internet access and keeping the 
 providing easy data management
 with an ORM. Implementation was also manageable, thanks to some excellent libraries that made SQLite compatible with my
 mobile app development setup.</p>
+
+<div class=""article-image-frame"">
+    <img src=""storageManager/th-3625161638.jpg""/>
+</div>
 
 <h2 class=""important-text"">Features:</h2>
 

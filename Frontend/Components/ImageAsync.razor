@@ -18,5 +18,6 @@ else
     public string ImageId { get; set; } = string.Empty;
     private Image? _image;
 
-    protected override async Task OnParametersSetAsync() => _image = await _httpService.GetImageAsync(ImageId);
+    protected override async Task OnParametersSetAsync()
+        => _image = await _httpService.GetImageAsync(ImageId);
 }

@@ -7,7 +7,7 @@
 <h1>Projects</h1>
 @if (_projects != null)
 {
-    <ol class="project-display">
+    <ul class="project-display">
         @foreach (var project in _projects)
         {
             <li class="project-display-item" @onclick="() => NavigateToDetails(project.Id)">
@@ -22,7 +22,7 @@
                 </Card>
             </li>
         }
-    </ol>
+    </ul>
     if (_totalPages > 1)
     {
         <div class="project-display-footer">
