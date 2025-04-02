@@ -10,8 +10,8 @@
     --second-light-color: #22a37c;
     --second-dark-color: #12805f;
     
-    --big-font-size: calc(1.5rem + .5vw + .5vh);
-    --mid-font-size: calc(1rem + .5vw + .5vh);
+    --big-font-size: calc(1rem + .5vw + .5vh);
+    --mid-font-size: calc(0.75rem + .5vw + .5vh);
     --small-font-size: calc(0.5rem + .5vw + .5vh);
 
     --extra-large-margin: 4rem;

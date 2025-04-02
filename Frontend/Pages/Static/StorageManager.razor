@@ -1,0 +1,118 @@
+@page "/projects/storagemanager"
+@using Shared.Models
+@inject IJSRuntime _jS
+
+<div class="project">
+    <div class="head">
+        <img class="thumbnail" src="storageManager/borracharia-icon.svg">
+        <div class="right-eye">
+            <h1 class="title">@_project.Name</h1>
+            <nav>
+                <div class="@SetActive(Tab.Article)" @onclick="() => SetTab(Tab.Article)">Article</div>
+                <div class="@SetActive(Tab.Gallery)" @onclick="() => SetTab(Tab.Gallery)">Gallery</div>
+            </nav>
+        </div>
+    </div>
+    @if (_tab == Tab.Article)
+    {
+        <div class="article">
+            <div id="text" class="commom-text">
+                <p id="description" @ref="_description"></p>
+                <div id="more-info">
+                    @if (_project.Github != string.Empty)
+                    {
+                        <h2>Checkout:</h2>
+                        <label for="github">Github:</label>
+                        <a id="github" href="@_project.Github">@_project.Github</a>
+                    }
+                </div>
+            </div>
+        </div>
+    }
+    else
+    {
+        <div></div>
+    }
+</div>
+
+@code
+{
+    private const string ACTIVE_TAB = "nav-item active";
+    private const string UNACTIVE_TAB = "nav-item";
+    private enum Tab { Article, Gallery };
+    private Tab _tab = Tab.Article;
+    private Project _project = null!;
+    private List<string> _imagePaths = [];
+    private ElementReference? _description;
+
+    private string SetActive(Tab tab)
+        => _tab == tab ? ACTIVE_TAB : UNACTIVE_TAB;
+
+    private void SetTab(Tab tab)
+    {
+        _description = null;
+        _tab = tab;
+    }
+
+    protected override void OnInitialized()
+    {
+        SetProject();
+        _imagePaths.Add("storageManager/th-3625161638.jpg");
+        _imagePaths.Add("storageManager/iphone-x-screenshot-544581703.jpg");
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            await _jS.InvokeVoidAsync("initializeCarousel");
+
+
+        if (_project != null && _description != null)
+            await _jS.InvokeVoidAsync("setInnerHtml", _description, _project.Description);
+    }
+
+    private void SetProject()
+    {
+        _project = new()
+            {
+                Name = "Storage Manager",
+                Description = DESCRIPTION
+            };
+    }
+
+    private const string DESCRIPTION = @"
+<h2 class=""important-text"">Introduction</h2>
+
+<p class=""paragraph"">A relative who owns a small tire shop asked me to help find a solution for managing their
+storage.
+They wanted software that would be easy for both themselves and their employees to access and use, so I suggested a
+mobile app.</p>
+
+<h2 class=""important-text"">Objective</h2>
+
+<p class=""paragraph"">My goal was to create a mobile app to manage the storage for a small tire shop, with an emphasis
+on simplicity and ease of use.
+I chose the .NET MAUI Blazor hybrid app project template, allowing me to leverage my HTML, CSS, and C# skills to build
+the app without spending too much
+time learning new technologies.</p>
+
+<h2 class=""important-text"">DataBase - SQLite</h2>
+
+<p class=""paragraph"">Deciding how to store the data wasn’t easy at first. I initially tried using MongoDB, but it
+wasn’t a good fit due to
+its complexity and reliance on an internet connection. After some research, I found an ideal solution: SQLite. It
+allowed me to store the database
+locally on the device, eliminating the need for internet access and keeping the application straightforward while still
+providing easy data management
+with an ORM. Implementation was also manageable, thanks to some excellent libraries that made SQLite compatible with my
+mobile app development setup.</p>
+
+<h2 class=""important-text"">Features:</h2>
+
+<ul>
+<li>CRUD of products;</li>
+<li>Regist purchases and sales;</li>
+<li>See statistics of product flow;</li>
+<li>See mouth profit history;</li>
+</ul>";
+}
