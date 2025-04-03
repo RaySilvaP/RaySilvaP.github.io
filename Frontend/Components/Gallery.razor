@@ -1,5 +1,7 @@
 @inherits ComponentBase
 @using Shared.Models
+@inject IJSRuntime _js
+@inject NavigationManager _navigator
 
 @if (Images.Count > 0)
 {
@@ -17,18 +19,52 @@ else if (Sources.Count > 0)
     <ul>
     @foreach (var source in Sources)
         {
-            <li>
+            <li @onclick="() => OpenModal(source)">
                 <img src="@source" />
             </li>
         }
     </ul>
 }
 
+<div class="modal" style="@_modalDisplay" @onclick="CloseModal">
+    <div id="modal-body">
+        <img id="img-modal" src="@_modalImgSrc">
+    </div>
+</div>
 
 @code
 {
+    private const string HIDDEN_MODAL = "display: none";
+    private const string VISIBLE_MODAL = "display: block";
     [Parameter]
     public List<Image> Images { get; set; } = [];
     [Parameter]
     public List<string> Sources { get; set; } = [];
+    private string _modalImgSrc = "";
+    private string _modalDisplay = HIDDEN_MODAL;
+
+    private async Task OpenModal(string imgSrc)
+    {
+        _modalImgSrc = imgSrc;
+        _modalDisplay = VISIBLE_MODAL;
+        await _js.InvokeVoidAsync("addKeyListener", DotNetObjectReference.Create(this));
+    }
+
+    private async Task CloseModal()
+    {
+        _modalDisplay = HIDDEN_MODAL;
+        await _js.InvokeVoidAsync("removeKeyListener");
+    }
+
+    [JSInvokable]
+    public async Task CloseModalKeyDown(string key)
+    {
+        Console.WriteLine(key);
+        if(key == "Escape")
+        {
+            _modalDisplay = HIDDEN_MODAL;
+            await _js.InvokeVoidAsync("removeKeyListener");
+            StateHasChanged();
+        }
+    }
 }

@@ -65,3 +65,13 @@ function onScreen(element) {
     // if element is between window's top and bottom edges
     return elementTopEdge <= windowBottomEdge;
 }
+
+window.addKeyListener = (dotNetHelper) => {
+    document.addEventListener("keydown", (event) => {
+        dotNetHelper.invokeMethodAsync("CloseModalKeyDown", event.key);
+    });
+};
+
+window.removeKeyListener = () => {
+    document.removeEventListener("keydown", () => {});
+}
