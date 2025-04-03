@@ -1,0 +1,45 @@
+@inherits ComponentBase
+@inject IJSRuntime _js
+
+<img src="@Source" class="@ImgClass" @onclick="OpenModal"/>
+
+<div class="modal" style="@_modalDisplay" @onclick="CloseModal">
+    <div id="modal-body">
+        <img id="img-modal" src="@Source">
+    </div>
+</div>
+
+@code
+{
+    private const string HIDDEN_MODAL = "display: none";
+    private const string VISIBLE_MODAL = "display: block";
+    [Parameter, EditorRequired]
+    public string Source {get; set;} = "";
+    [Parameter]
+    public string ImgClass {get; set;} = "";
+    private string _modalDisplay = HIDDEN_MODAL;
+
+    private async Task OpenModal()
+    {
+        _modalDisplay = VISIBLE_MODAL;
+        await _js.InvokeVoidAsync("addKeyListener", DotNetObjectReference.Create(this));
+    }
+
+    private async Task CloseModal()
+    {
+        _modalDisplay = HIDDEN_MODAL;
+        await _js.InvokeVoidAsync("removeKeyListener");
+    }
+
+    [JSInvokable]
+    public async Task CloseModalKeyDown(string key)
+    {
+        Console.WriteLine(key);
+        if(key == "Escape")
+        {
+            _modalDisplay = HIDDEN_MODAL;
+            await _js.InvokeVoidAsync("removeKeyListener");
+            StateHasChanged();
+        }
+    }
+}

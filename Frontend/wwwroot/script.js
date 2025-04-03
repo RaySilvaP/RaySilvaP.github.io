@@ -36,42 +36,15 @@ window.initializeCarousel = () => {
             () => $('#carousel').carousel('next') );
 }
 
-window.initializeAnimations = () => {
-    animationObject = $('[animation]');
-    $(window).on('scroll', (e) => {
-        addAnimation();
-    });
-    console.log('anim');
-}
-
-function addAnimation() {
-    animationObject.each((index, element) => {
-      const $currentElement = $(element),
-        animation = $currentElement.attr('animation');
-
-      if (onScreen($currentElement)) {
-        $currentElement.addClass(animation);
-      }
-    });
-}
-
-function onScreen(element) {
-    // window bottom edge
-    const windowBottomEdge = $(window).scrollTop() + $(window).height();
-
-    // element top edge
-    const elementTopEdge = element.offset().top;
-
-    // if element is between window's top and bottom edges
-    return elementTopEdge <= windowBottomEdge;
-}
+let handler;
 
 window.addKeyListener = (dotNetHelper) => {
-    document.addEventListener("keydown", (event) => {
+    handler = (event) => {
         dotNetHelper.invokeMethodAsync("CloseModalKeyDown", event.key);
-    });
+    }
+    document.addEventListener("keydown", handler);
 };
 
 window.removeKeyListener = () => {
-    document.removeEventListener("keydown", () => {});
+    document.removeEventListener("keydown", handler);
 }

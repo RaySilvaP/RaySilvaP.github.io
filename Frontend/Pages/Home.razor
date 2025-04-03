@@ -1,36 +1,46 @@
 ﻿@page "/"
-@using Frontend.Components.Home
 @inject IJSRuntime _jS
 
 <PageTitle>Home</PageTitle>
 
-<Personal />
-<div>
-    <p class="title" animation="fade-up">Check Out My Networks</p>
-    <div id="contacts" animation="fade-up">
-        <div id="contacts-list">
-            <div class="contact commom-text">
-                <i class="bi bi-github"></i>
-                <a href="https://github.com/RaySilvaP">
-                    Github
-                </a>
-            </div>
-            <div class="contact commom-text">
-                <i class="bi bi-linkedin" style="color: rgb(10, 102, 194);"></i>
-                <a href="https://www.linkedin.com/in/ray-da-silva-pereira-476903144">
-                    LinkedIn
-                </a>
+<div id="personal">
+    <div id="text">
+        <p class="important-text">
+            Hi! I'm Ray. I'm a student <span class="contrast-text">web developer</span>, and I've been developing both
+            the <span class="contrast-text">backend</span> and <span class="contrast-text">frontend</span> of many
+            websites I've created. Normally, I use .NET to develop my websites and web services, but I can work with a
+            variety of development tools.
+        </p>
+    </div>
+    <div id="identity">
+        <div id="info">
+            <img id="my-img" src="https://i.scdn.co/image/8815db3d2b07d68b919712ace17dc538d9454a9f">
+            <span class="commom-text">Ray da Silva</span>
+            <span class="commom-text">Web Developer | Full Stack</span>
+            <div id="contacts">
+                <ul>
+                    <li>
+                        <a class="contact" href="https://github.com/RaySilvaP/">
+                            <Icon Name="IconName.Github" />
+                            <span>Github</span>
+                        </a>
+                    </li>
+                    <li>
+                        <a class="contact" href="https://www.linkedin.com/in/ray-da-silva-pereira-476903144/">
+                            <Icon Name="IconName.Linkedin" />
+                            <span>Linkedin</span>
+                        </a>
+                    </li>
+                </ul>
             </div>
         </div>
     </div>
 </div>
-<Professional />
-
-@code
-{
-    protected override async Task OnAfterRenderAsync(bool firstRender)
-    {
-        if (firstRender)
-            await _jS.InvokeVoidAsync("initializeAnimations");
-    }
-}
+<div id="professional">
+    <p class="title">Main Works:</p>
+    <div id="works">
+        <Work Title="Stock Manager"
+            ShortDescription="Simple mobile app for managing the storage of a small tire shop." CanVisit="false"
+            ImageSrc="storageManager/borracharia-icon.svg" ProjectUrl="/projects/storageManager" />
+    </div>
+</div>

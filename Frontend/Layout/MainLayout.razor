@@ -3,9 +3,6 @@
 @inject HttpService _httpService
 
 <div class="page">
-    <div id="header">
-        <NavBar />
-    </div>
     <main>
         <article class="content px-4">
             @Body
@@ -18,6 +15,13 @@
 {
     protected override async Task OnInitializedAsync()
     {
-        await _httpService.CheckConnectionAsync();
+        try
+        {
+            await _httpService.CheckConnectionAsync();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
     }
 }
