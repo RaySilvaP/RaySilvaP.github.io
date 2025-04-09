@@ -1,0 +1,23 @@
+:root{
+    --background-color: white;
+    --text-lighter-color: lightgray;
+    --text-light-color: dimgray;
+    --text-color: black;
+    --first-color: #011627;
+    --first-light-color: #05253f;
+    --first-dark-color: #00101d;
+    --second-color: #1A936F;
+    --second-light-color: #22a37c;
+    --second-dark-color: #12805f;
+    
+    --x-big-font-size: calc(2.5rem + .5vw + .5vh);
+    --big-font-size: calc(1rem + .5vw + .5vh);
+    --mid-font-size: calc(0.75rem + .5vw + .5vh);
+    --small-font-size: calc(0.5rem + .5vw + .5vh);
+
+    --extra-large-margin: 4rem;
+    --large-margin: 2rem;
+    --big-margin: 1rem;
+    --mid-margin: 0.75rem;
+    --small-margin: 0.5rem
+}
