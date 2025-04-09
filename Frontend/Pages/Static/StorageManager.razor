@@ -17,46 +17,33 @@
     {
         <div class="article">
             <div id="text" class="commom-text">
-                <h2 class=" important-text">Introduction</h2>
-                <p class=" paragraph">A relative who owns a small tire shop asked me to help find a solution for managing
-                    their
-                    storage.
-                    They wanted software that would be easy for both themselves and their employees to access and use, so I
-                    suggested a
-                    mobile app.</p>
-                <div class="article-image-frame">
-                    <img src="storageManager/WhatsApp Image 2025-04-03 at 9.08.01 PM.jpeg" />
-                </div>
+                <h2 class="important-text">Introduction</h2>
+                <p class="paragraph">
+                    A relative of mine, who owns a small tire shop, asked me to develop an application to make inventory management easier for his business.
+                    It should be a fairly simple mobile application, capable of recording the inbound and outbound flow of products, along with some basic statistics.
+                </p>
+                <p class="paragraph">To develop the application, I chose to use MAUI with Blazor, which was a new framework for developing hybrid mobile applications at the time.</p>
                 <h2 class="important-text">Objective</h2>
-                <p class="paragraph">My goal was to create a mobile app to manage the storage for a small tire shop, with
-                    an emphasis
-                    on simplicity and ease of use.
-                    I chose the .NET MAUI Blazor hybrid app project template, allowing me to leverage my HTML, CSS, and C#
-                    skills to build
-                    the app without spending too much
-                    time learning new technologies.</p>
-                <h2 class="important-text">DataBase - SQLite</h2>
-                <p class="paragraph">Deciding how to store the data wasn’t easy at first. I initially tried using
-                    MongoDB, but it
-                    wasn’t a good fit due to
-                    its complexity and reliance on an internet connection. After some research, I found an ideal solution:
-                    SQLite. It
-                    allowed me to store the database
-                    locally on the device, eliminating the need for internet access and keeping the application
-                    straightforward while still
-                    providing easy data management
-                    with an ORM. Implementation was also manageable, thanks to some excellent libraries that made SQLite
-                    compatible with my
-                    mobile app development setup.</p>
+                <p class="paragraph">
+                    The main objective was to make the process of recording inbound and outbound products as easy and fast as possible, given the context in which the application
+                    would be used — likely in situations where time is limited. Another secondary objective was to display some monthly statistics, such as profit.    
+                </p>
                 <div class="article-image-frame">
                     <img src="storageManager/WhatsApp Image 2025-04-03 at 9.08.01 PM5.jpeg" />
                 </div>
+                <h2 class="important-text">Database</h2>
+                <p class="paragraph">
+                    I initially tried using MongoDB to store the data, but due to its reliance on an internet connection, I chose to use SQLite instead.
+                    It allowed the data to still be managed by an ORM and stored locally on the device, eliminating the need for an internet connection.
+                </p>
+                <div class="article-image-frame">
+                    <img src="storageManager/WhatsApp Image 2025-04-03 at 9.08.01 PM.jpeg" />
+                </div>
                 <h2 class="important-text">Features:</h2>
                 <ul>
-                    <li>CRUD of products;</li>
-                    <li>Regist purchases and sales;</li>
-                    <li>See statistics of product flow;</li>
-                    <li>See mouth profit history;</li>
+                    <li>Product management;</li>
+                    <li>Inventory tracking;</li>
+                    <li>Statistics and reports;</li>
                 </ul>
             </div>
         </div>
