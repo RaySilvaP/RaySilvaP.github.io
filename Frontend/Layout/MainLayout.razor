@@ -1,15 +1,27 @@
-﻿@inherits LayoutComponentBase
-<div class="page">
+﻿@using Frontend.Services
+@inherits LayoutComponentBase
+@inject HttpService _httpService
 
-    <div id="header">
-        <div id="logo">
-            <span>Ray Silva</span>
-        </div>
-        <NavBar />
-    </div>
+<div class="page">
     <main>
         <article class="content px-4">
             @Body
         </article>
     </main>
+    <Footer />
 </div>
+
+@code
+{
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            await _httpService.CheckConnectionAsync();
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+    }
+}

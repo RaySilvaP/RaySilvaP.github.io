@@ -1,0 +1,100 @@
+@using Shared.Models
+@using Shared.Extensions
+@using Frontend.Services
+@page "/admin/poster"
+@layout AdminLayout
+@inject HttpService _httpService
+@inject IJSRuntime _jSRuntime
+
+<div>
+    <h3>New Project</h3>
+    <div id="project-form">
+        <div id="project-form-properties">
+            <label for="name">Name:</label>
+            <input type="text" name="name" id="name" @bind-value="_project.Name">
+            <label for="short">Short description:</label>
+            <textarea rows="3" name="short" id="short" @bind="_project.ShortDescription"></textarea>
+            <label for="description">Description:</label>
+            <textarea rows="5" name="description" id="description" @bind="_project.Description"></textarea>
+            <label for="github">Github:</label>
+            <input type="text" name="github" id="github" @bind-value="_project.Github">
+        </div>
+        <div id="project-form-images">
+            <InputFile multiple OnChange="LoadFilesAsync" @ref="_inputFile" />
+            <div id="images-preview" @ref="_imgsPreview" />
+        </div>
+        <div id="project-form-buttons">
+            <button @onclick="PostProjectAsync">Post</button>
+            <button @onclick="Clear">Clear</button>
+        </div>
+    </div>
+</div>
+
+@code
+{
+    private Project _project = new();
+    private Image _image = new();
+    private ElementReference _imgsPreview;
+    private InputFile? _inputFile;
+    private IReadOnlyList<IBrowserFile>? _files;
+
+    private async Task PostProjectAsync()
+    {
+        if (_project.Name == string.Empty || _project.Description == string.Empty)
+            return;
+
+        try
+        {
+            await _httpService.PostProjectAsync(_project);
+            if (_files != null)
+            {
+                await PostImagesAsync(_files);
+                await PostThumbnailAsync(_files[0]);
+            }
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+}
+
+    private async Task PostImagesAsync(IEnumerable<IBrowserFile> files)
+    {
+        foreach (var file in files)
+        {
+            var image = new Image
+                {
+                    Name = file.Name,
+                    Format = file.ContentType,
+                    Size = file.Size,
+                    Base64String = await file.OpenReadStream(long.MaxValue).ConvertToBase64Async(),
+                };
+            await _httpService.PostImageAsync(image, _project.Id);
+        }
+    }
+
+    private async Task PostThumbnailAsync(IBrowserFile file)
+    {
+        var image = new Image
+            {
+                Name = file.Name,
+                Format = file.ContentType,
+                Size = file.Size,
+                Base64String = await file.OpenReadStream(long.MaxValue).ConvertToBase64Async()
+            };
+        await _httpService.PostThumbnailAsync(image, _project.Id);
+    }
+
+    private async Task LoadFilesAsync(InputFileChangeEventArgs e)
+    {
+        _files = e.GetMultipleFiles();
+        await _jSRuntime.InvokeVoidAsync("previewImages", _inputFile!.Element, _imgsPreview);
+    }
+
+    private void Clear()
+    {
+        _project.Name = string.Empty;
+        _project.Description = string.Empty;
+        _project.Github = string.Empty;
+    }
+}

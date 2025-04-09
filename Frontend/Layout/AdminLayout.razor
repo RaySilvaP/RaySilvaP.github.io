@@ -1,0 +1,27 @@
+@using Frontend.Services
+@inherits LayoutComponentBase
+@inject HttpService _httpService
+@inject NavigationManager _navigator
+
+<div class="page">
+    <div id="sidebar">
+        <div id="logo">
+            <span>Admin</span>
+        </div>
+        <AdminNavBar />
+    </div>
+    <main>
+        <article class="content px-4">
+            @Body
+        </article>
+    </main>
+</div>
+
+@code {
+    protected override async Task OnInitializedAsync()
+    {
+        var isAuthorized = await _httpService.CheckAuthorizationAsync();
+        if (!isAuthorized)
+            _navigator.NavigateTo("/admin");
+    }
+}

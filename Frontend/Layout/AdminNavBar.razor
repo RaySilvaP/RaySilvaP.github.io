@@ -1,0 +1,23 @@
+@inject IJSRuntime _jSRuntime
+@inject NavigationManager _navigator
+<nav>
+    <div>
+        <NavLink class="nav-link" href="admin/dashboard">Dashboard</NavLink>
+    </div>
+    <div>
+        <NavLink class="nav-link" href="admin/poster">Post Project</NavLink>
+    </div>
+    <div>
+        <NavLink class="nav-link" href="admin/editor">Edit Project</NavLink>
+    </div>
+</nav>
+<button @onclick="LogoutAsync">Logout</button>
+
+@code
+{
+    private async Task LogoutAsync()
+    {
+        await _jSRuntime.InvokeVoidAsync("deleteToken");
+        _navigator.NavigateTo("/admin");
+    }
+}

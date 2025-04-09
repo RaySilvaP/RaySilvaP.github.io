@@ -1,0 +1,60 @@
+@using Frontend.Services
+@using Frontend.Exceptions
+@page "/admin"
+@inject NavigationManager _navigator
+@inject TokenService _tokenService
+@inject HttpService _httpService
+
+<div id="login-form">
+    @if (_wrongCredentials)
+    {
+        <p class="error-message">Wrong username or password.</p>
+    }
+    <label for="username">Username:</label>
+    <input type="text" name="username" id="username" @bind-value="_username">
+    <label for="password">Password:</label>
+    <input type="password" name="password" id="password" @bind-value="_password">
+    <button @onclick="Login">Login</button>
+</div>
+
+
+@code
+{
+    private string _username = string.Empty;
+    private string _password = string.Empty;
+    private bool _wrongCredentials = false;
+
+    protected override async Task OnInitializedAsync()
+    {
+        try
+        {
+            var isSuccess = await _httpService.CheckAuthorizationAsync();
+            if (isSuccess)
+                _navigator.NavigateTo("/admin/dashboard");
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+    }
+
+    private async Task Login()
+    {
+        if (_username == string.Empty || _password == string.Empty)
+            return;
+
+        try
+        {
+            await _httpService.LoginAsync(_username, _password);
+            _navigator.NavigateTo("/admin/dashboard");
+        }
+        catch (AuthenticationFailException)
+        {
+            _wrongCredentials = true;
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+    }
+}

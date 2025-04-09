@@ -11,11 +11,15 @@ public class CredentialsService(IRepository repository)
     public async Task<bool> VerifyCredentialsAsync(Login login)
     {
         var admin = await _repository.GetAdminAsync(login.Username);
-        if (admin == null)
-            return false;
 
         var hasher = new PasswordHasher<string>();
         var result = hasher.VerifyHashedPassword(login.Username, admin.PasswordHash, login.Password);
-        return result == PasswordVerificationResult.Success || result == PasswordVerificationResult.SuccessRehashNeeded;
+        if(result == PasswordVerificationResult.SuccessRehashNeeded)
+        {
+            admin.PasswordHash = hasher.HashPassword(login.Username, login.Password);
+            await _repository.UpdateAdminPassword(admin);
+            return true;
+        }
+        return result == PasswordVerificationResult.Success;
     }
 }

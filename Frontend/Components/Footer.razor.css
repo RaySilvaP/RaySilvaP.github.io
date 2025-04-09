@@ -1,0 +1,12 @@
+#footer{
+    display: flex;
+    justify-content: space-between;
+    align-items: end;
+    color: var(--text-light-color);
+    padding: var(--small-margin);
+}
+
+#copyright-text{
+    width: 100%;
+    text-align: end;
+}

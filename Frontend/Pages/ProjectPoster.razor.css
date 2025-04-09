@@ -1,0 +1,31 @@
+#project-form-properties{
+    display: flex;
+    flex-direction: column;
+}
+
+#project-form-images{
+    display: flex;
+    flex-wrap: wrap;
+    flex-direction: column;
+}
+
+#images-preview{
+    display: flex;
+    flex-wrap: wrap;
+    justify-content: space-evenly;
+    img{
+        width: 19%;
+        height: 150px;
+        object-fit: cover;
+        border: 1px solid gray; 
+        margin-bottom: 10px;
+    }
+}
+
+input{
+    margin-bottom: 10px;
+}
+
+textarea{
+    margin-bottom: 10px;
+}

@@ -1,0 +1,23 @@
+@using Shared.Models
+@using Frontend.Services
+@inherits ComponentBase
+@inject HttpService _httpService
+
+@if (_image == null)
+{
+    <i class="bi bi-image" />
+}
+else
+{
+    <img src="data:@_image.Format;base64,@_image.Base64String">
+}
+
+@code
+{
+    [Parameter, EditorRequired]
+    public string ImageId { get; set; } = string.Empty;
+    private Image? _image;
+
+    protected override async Task OnParametersSetAsync()
+        => _image = await _httpService.GetImageAsync(ImageId);
+}

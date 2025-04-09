@@ -1,0 +1,74 @@
+@using Shared.Models
+@using Frontend.Services
+@page "/admin/editor"
+@layout AdminLayout
+@inject HttpService _httpService
+@inject NavigationManager _navigator
+
+<h3>Edit Project</h3>
+<div id="container">
+    <div id="searchbar">
+        <label for="project-id">Project ID:</label>
+        <input type="text" name="id" id="id" @bind-value="_id">
+        <button @onclick="GetProject">Edit</button>
+    </div>
+    @if (_project != null)
+    {
+        <div id="project-form-properties">
+            <label for="name">Name:</label>
+            <input type="text" name="name" id="name" @bind-value="_project.Name">
+            <label for="short">Short description:</label>
+            <textarea rows="3" name="short" id="short" @bind="_project.ShortDescription"></textarea>
+            <label for="description">Description:</label>
+            <textarea rows="5" name="description" id="description" @bind="_project.Description"></textarea>
+            <label for="github">Github</label>
+            <input type="text" name="github" id="github" @bind-value="_project.Github">
+        </div>
+        <div id="project-form-buttons">
+            <button @onclick="DeleteProject">Excluir</button>
+            <button @onclick="SaveProject">Salvar</button>
+        </div>
+    }
+    else
+    {
+        <span>@_spanMessage</span>
+    }
+</div>
+
+@code {
+    private string _id = string.Empty;
+    private Project? _project;
+    private string _spanMessage = "No Project...";
+
+    private async Task GetProject()
+    {
+        _project = await _httpService.GetProjectAsync(_id);
+        if (_project == null)
+            _spanMessage = "Project not found.";
+    }
+
+    private async Task SaveProject()
+    {
+        try
+        {
+            await _httpService.PutProjectAsync(_project!);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+    }
+
+    private async Task DeleteProject()
+    {
+        try
+        {
+            await _httpService.DeleteProjectAsync(_project!.Id);
+            _navigator.Refresh(true);
+        }
+        catch (Exception e)
+        {
+            Console.WriteLine(e);
+        }
+    }
+}

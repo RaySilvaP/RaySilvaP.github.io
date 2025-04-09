@@ -2,15 +2,16 @@
     position: relative;
     display: flex;
     flex-direction: column;
+    background-image: url(dot-grid.webp);
   }
   
   #header {
     display: flex;
     height: fit-content;
-    padding: 10px;
-    background-color: lightgray;
+    padding: var(--small-margin);
+    color: var(--text-light-color);
     align-items: center;
-    justify-content: space-evenly;
+    justify-content: center;
   }
   
   #logo {
@@ -26,10 +27,6 @@
   
   main {
     flex: 1;
-  }
-  
-  .sidebar {
-    background-image: linear-gradient(180deg, rgb(5, 39, 103) 0%, #3a0647 70%);
   }
   
   .top-row {

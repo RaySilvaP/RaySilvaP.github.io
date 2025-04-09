@@ -5,22 +5,20 @@ using Microsoft.IdentityModel.Tokens;
 
 namespace Backend.Services;
 
-public class JwtTokenService(IConfigurationRoot root) : ITokenService
+public class JwtTokenService(string key) : ITokenService
 {
-    private readonly IConfigurationRoot _config = root;
     public string GenerateToken()
     {
-        var key = _config.GetSection("Authentication:Key").Value!;
         var keyBytes = Encoding.UTF8.GetBytes(key);
         var tokenHandler = new JwtSecurityTokenHandler();
         var tokenDescriptor = new SecurityTokenDescriptor
         {
-            Expires = DateTime.UtcNow.AddHours(6),
+            Expires = DateTime.UtcNow.AddHours(3),
             SigningCredentials = new SigningCredentials(
                 new SymmetricSecurityKey(keyBytes),
                 SecurityAlgorithms.HmacSha256Signature),
         };
         var token = tokenHandler.CreateToken(tokenDescriptor);
-        return "Bearer " + tokenHandler.WriteToken(token);
+        return tokenHandler.WriteToken(token);
     }
 }

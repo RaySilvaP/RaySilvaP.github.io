@@ -1,9 +1,53 @@
-@page "/project"
+@using Frontend.Services
+@using Shared.Models
+@page "/projects/{id}"
+@inject HttpService _httpService
+@inject NavigationManager _navigator
+@inject IJSRuntime _jSRuntime
 
-<div>
-    <img
-        src="https://external-content.duckduckgo.com/iu/?u=https%3A%2F%2Ftse1.mm.bing.net%2Fth%3Fid%3DOIP.VrBU4IZiLVYKaw6FCZs8IwHaHa%26pid%3DApi&f=1&ipt=b3cd8e724dd85e67ea0b1cbd8e50e546383c99f349dd2295c608c67f4a3a6084&ipo=images" />
-    <h1>Title</h1>
-    <p>Description</p>
-    <p>Technologies</p>
+<div class="project">
+    @if (_project != null)
+    {
+        if (_project.Images != null || _project.Images.Count > 0)
+        {
+            <div id="display">
+                <ImagesCarousel ImageIds="@_project.Images.Select(i => i.Id).ToList()" />
+            </div>
+        }
+        <h1 id="title">@_project.Name</h1>
+        <div id="text">
+            <p id="description" @ref="_description"></p>
+            <div id="more-info">
+                @if (_project.Github != string.Empty)
+                {
+                    <h2>Checkout:</h2>
+                    <label for="github">Github:</label>
+                    <a id="github" href="@_project.Github">@_project.Github</a>
+                }
+            </div>
+        </div>
+    }
 </div>
+
+@code {
+    [Parameter]
+    public string Id { get; set; } = null!;
+    private Project? _project;
+    private ElementReference _description;
+
+    protected override async Task OnParametersSetAsync()
+    {
+        _project = await _httpService.GetProjectAsync(Id);
+        if (_project == null)
+        {
+            _navigator.NavigateTo("/");
+            return;
+        }
+    }
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (_project != null)
+            await _jSRuntime.InvokeVoidAsync("setInnerHtml", _description, _project.Description);
+    }
+}

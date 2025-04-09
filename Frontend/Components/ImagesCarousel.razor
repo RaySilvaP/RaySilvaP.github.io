@@ -1,0 +1,41 @@
+@using Shared.Models
+@inherits ComponentBase
+@inject IJSRuntime _jSRuntime
+
+<div class="carousel slide" data-ride="carousel" id="carousel">
+    <div class="carousel-inner">
+        <div class="carousel-item active">
+            <div class="item-flex">
+                <ImageAsync ImageId="@ImageIds[0]" />
+            </div>
+        </div>
+        @for (int i = 1; i < ImageIds.Count; i++)
+        {
+            <div class="carousel-item">
+                <div class="item-flex">
+                    <ImageAsync ImageId="@ImageIds[i]" />
+                </div>
+            </div>
+        }
+    </div>
+    @if (ImageIds.Count > 1)
+    {
+        <button class="carousel-control-prev" data-target="#carousel" data-slide="prev">
+            <span class="carousel-control-prev-icon"></span>
+        </button>
+        <button class="carousel-control-next" data-target="#carousel" data-slide="next">
+            <span class="carousel-control-next-icon"></span>
+        </button>
+    }
+</div>
+
+@code {
+    [Parameter, EditorRequired]
+    public List<string> ImageIds { get; set; } = null!;
+
+    protected override async Task OnAfterRenderAsync(bool firstRender)
+    {
+        if (firstRender)
+            await _jSRuntime.InvokeVoidAsync("initializeCarousel");
+    }
+}

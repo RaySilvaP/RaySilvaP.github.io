@@ -1,0 +1,55 @@
+.project-display{
+    display: flex;
+    flex-wrap: wrap;
+    flex: 1;
+    justify-content: space-evenly;
+    list-style: none;
+    padding-left: 0px;
+}
+
+.project-display-footer{
+    display: flex;
+    justify-content: center;
+    width: 100%;
+}
+
+.project-display-item{
+    display: flex;
+    width: 30%;
+    height: 400px;
+    margin-bottom: 10px;
+    .card{
+        width: 100%;
+    }
+    overflow-y: hidden;
+}
+
+.project-display-item:hover{
+    cursor: pointer;
+}
+
+.img-frame{
+    display: flex;
+    width: 100%;
+    height: 56%;
+    justify-content: center;
+}
+
+::deep i{ 
+    width: 100%;
+    font-size: 10vw;
+    margin: auto;
+    text-align: center;
+    border-right: 1px solid gray;
+}
+
+::deep img{
+    float: left;
+    max-width: 100%;
+    object-fit: cover;
+    background-color: gray;
+}
+
+h1{
+    margin-bottom: 10px;
+}

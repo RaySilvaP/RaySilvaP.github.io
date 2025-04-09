@@ -1,0 +1,111 @@
+#professional{
+    display: flex;
+    flex-direction: column;
+    height: 100vh;
+    background-color: var(--first-color);
+    padding: var(--small-margin);
+    width: 100vw;
+    margin-left: -2rem;
+}
+
+.title{
+    font-size: var(--x-big-font-size);
+    text-align: center;
+    color: var(--text-lighter-color);
+}
+
+::deep .img-frame{
+    padding-top: var(--small-margin);
+    padding-bottom: var(--small-margin);
+    margin-bottom: 0;
+}
+
+#works{
+    display: flex;
+    align-items: center;
+    flex: 1;
+    width: 100%;
+    justify-content: center;
+}
+
+::deep .work{
+    width: 30%;
+    border: 2px solid var(--second-color);
+    border-radius: 10px;
+}
+
+#personal{
+    display: flex;
+    justify-content: space-evenly;
+    align-items: center;
+    height: 100vh;
+}
+
+#identity{
+    display: flex;
+    justify-content: center;
+    padding: var(--small-margin);
+    height: 85%;
+    width: 45%;
+}
+
+#info{
+    display: flex;
+    flex-direction: column;
+    padding: var(--mid-margin);
+    background-color: var(--first-color);
+    border-radius: 10px;
+    color: var(--text-light-color);
+    width: 50%;
+    min-height: 75%;
+    height: fit-content;
+}
+
+#contacts{
+    display: flex;
+    flex-direction: column;
+    height: fit-content;
+}
+
+ul{
+    display: inline-flex;
+    list-style: none;
+    padding-left: 0;
+    margin-bottom: 0;
+    flex-wrap: wrap;
+}
+
+li{
+    justify-content: space-evenly;
+}
+
+.contact{
+    display: flex;
+    align-items: center;
+    padding: var(--small-margin);
+    padding-left: 0;
+    font-size: var(--small-font-size);
+    color: var(--text-lighter-color);
+    text-decoration: none;
+    span{
+        margin-left: var(--small-margin);
+    }
+}
+
+#my-img{
+    width: 150px;
+    height: 150px;
+    border-radius: 100%;
+    border: 3px solid var(--second-color);
+    margin-bottom: var(--small-margin);
+}
+
+#text{  
+    font-size: var(--mid-font-size);
+    width: 45%;
+}
+
+.contrast-text{
+    font-weight: bold;
+    color: var(--second-color);
+}

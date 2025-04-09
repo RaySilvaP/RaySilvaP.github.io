@@ -1,0 +1,58 @@
+@using Shared.Models
+@using Frontend.Services
+@inherits ComponentBase
+@inject NavigationManager _navigator
+@inject HttpService _httpService
+
+<h1>Projects</h1>
+@if (_projects != null)
+{
+    <ul class="project-display">
+        @foreach (var project in _projects)
+        {
+            <li class="project-display-item" @onclick="() => NavigateToDetails(project.Id)">
+                <Card>
+                    <div class="img-frame">
+                        <ImageAsync ImageId="@project.Thumbnail.Id" />
+                    </div>
+                    <CardBody>
+                        <CardTitle class="important-text">@project.Name</CardTitle>
+                        <CardText class="commom-text">@project.ShortDescription</CardText>
+                    </CardBody>
+                </Card>
+            </li>
+        }
+    </ul>
+    if (_totalPages > 1)
+    {
+        <div class="project-display-footer">
+            <Pagination TotalPages="_totalPages" ActivePageNumber="@_currentPageNumber" DisplayPages="5"
+                PageChanged="OnPageChangedAsync" />
+        </div>
+    }
+}
+else
+{
+    <span>No projects... :(</span>
+}
+
+@code {
+    private const short PAGE_SIZE = 9;
+    private List<Project>? _projects;
+    private int _totalPages = 0, _currentPageNumber = 1;
+
+    protected override async Task OnInitializedAsync()
+    {
+        (_totalPages, _projects) = await _httpService.GetProjectsAsync(_currentPageNumber, PAGE_SIZE);
+    }
+
+    private async Task OnPageChangedAsync(int newPageNumber)
+    {
+        _currentPageNumber = newPageNumber;
+        _projects!.Clear();
+        (_totalPages, _projects) = await _httpService.GetProjectsAsync(_currentPageNumber, PAGE_SIZE);
+    }
+
+    private void NavigateToDetails(string id)
+    => _navigator.NavigateTo($"/projects/{id}");
+}

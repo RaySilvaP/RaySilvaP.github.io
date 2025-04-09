@@ -1,0 +1,76 @@
+@page "/projects/storagemanager"
+@using Shared.Models
+@inject IJSRuntime _jS
+
+<div class="project">
+    <div class="head">
+        <img class="thumbnail" src="storageManager/borracharia-icon.svg">
+        <div class="right-eye">
+            <h1 class="title">Inventory Manager</h1>
+            <nav>
+                <div class="@SetActive(Tab.Article)" @onclick="() => _tab = Tab.Article">Article</div>
+                <div class="@SetActive(Tab.Gallery)" @onclick="() => _tab = Tab.Gallery">Gallery</div>
+            </nav>
+        </div>
+    </div>
+    @if (_tab == Tab.Article)
+    {
+        <div class="article">
+            <div id="text" class="commom-text">
+                <h2 class="important-text">Introduction</h2>
+                <p class="paragraph">
+                    A relative of mine, who owns a small tire shop, asked me to develop an application to make inventory management easier for his business.
+                    It should be a fairly simple mobile application, capable of recording the inbound and outbound flow of products, along with some basic statistics.
+                </p>
+                <p class="paragraph">To develop the application, I chose to use MAUI with Blazor, which was a new framework for developing hybrid mobile applications at the time.</p>
+                <h2 class="important-text">Objective</h2>
+                <p class="paragraph">
+                    The main objective was to make the process of recording inbound and outbound products as easy and fast as possible, given the context in which the application
+                    would be used — likely in situations where time is limited. Another secondary objective was to display some monthly statistics, such as profit.    
+                </p>
+                <div class="article-image-frame">
+                    <img src="storageManager/WhatsApp Image 2025-04-03 at 9.08.01 PM5.jpeg" />
+                </div>
+                <h2 class="important-text">Database</h2>
+                <p class="paragraph">
+                    I initially tried using MongoDB to store the data, but due to its reliance on an internet connection, I chose to use SQLite instead.
+                    It allowed the data to still be managed by an ORM and stored locally on the device, eliminating the need for an internet connection.
+                </p>
+                <div class="article-image-frame">
+                    <img src="storageManager/WhatsApp Image 2025-04-03 at 9.08.01 PM.jpeg" />
+                </div>
+                <h2 class="important-text">Features:</h2>
+                <ul>
+                    <li>Product management;</li>
+                    <li>Inventory tracking;</li>
+                    <li>Statistics and reports;</li>
+                </ul>
+            </div>
+        </div>
+    }
+    else
+    {
+        <Gallery Sources="@images" />
+    }
+</div>
+
+@code
+{
+    private const string ACTIVE_TAB = "nav-item active";
+    private const string UNACTIVE_TAB = "nav-item";
+    private enum Tab { Article, Gallery };
+    private Tab _tab = Tab.Article;
+    private List<string> images = [];
+
+    private string SetActive(Tab tab)
+    => _tab == tab ? ACTIVE_TAB : UNACTIVE_TAB;
+
+    protected override void OnInitialized()
+    {
+        images.Add("storageManager/WhatsApp Image 2025-04-03 at 9.08.01 PM.jpeg");
+        images.Add("storageManager/WhatsApp Image 2025-04-03 at 9.08.01 PM2.jpeg");
+        images.Add("storageManager/WhatsApp Image 2025-04-03 at 9.08.01 PM3.jpeg");
+        images.Add("storageManager/WhatsApp Image 2025-04-03 at 9.08.01 PM4.jpeg");
+        images.Add("storageManager/WhatsApp Image 2025-04-03 at 9.08.01 PM5.jpeg");
+    }
+}
