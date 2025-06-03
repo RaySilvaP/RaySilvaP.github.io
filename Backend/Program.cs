@@ -316,4 +316,3 @@ app.MapMethods("/cache", methods, async (ICacheService cache) =>
 });
 
 app.Run();
-
